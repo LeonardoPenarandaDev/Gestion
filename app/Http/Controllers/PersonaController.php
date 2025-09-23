@@ -33,6 +33,7 @@ class PersonaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'identificacion' => 'required|string|max:20|unique:personas',
+            'nombre' => 'nullable|string|max:70',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string',
             'email' => 'nullable|email|max:80',
@@ -81,6 +82,7 @@ class PersonaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'identificacion' => 'required|string|max:20|unique:personas,identificacion,'.$persona->id,
+            'nombre' => 'nullable|string|max:70',
             'telefono' => 'nullable|string|max:20',
             'direccion' => 'nullable|string',
             'email' => 'nullable|email|max:80',
@@ -89,6 +91,7 @@ class PersonaController extends Controller
             'estado' => 'nullable|string|max:50'
         ], [
             'identificacion.required' => 'La identificación es obligatoria',
+            'name.required' => 'El nombre es obligatorio',
             'identificacion.unique' => 'Ya existe una persona con esta identificación',
             'email.email' => 'El email debe tener un formato válido'
         ]);

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('fk_id_zona', 2);
             $table->string('fk_id_puesto', 2);
+            $table->integer('identificacion')->nullable();
+            $table->string('nombre', 20)->nullable();
             $table->integer('mesas')->nullable();
             $table->string('alias', 20)->nullable();
             $table->timestamps();

@@ -430,7 +430,7 @@
                         <input id="remember_me" type="checkbox" name="remember">
                         <div class="checkmark"></div>
                     </div>
-                    <label for="remember_me" class="checkbox-label">{{ __('Remember me') }}</label>
+                    <label for="remember_me" class="checkbox-label">{{ __('Recordar Contraseña') }}</label>
                 </div>
 
                 <!-- Submit Button and Forgot Password -->

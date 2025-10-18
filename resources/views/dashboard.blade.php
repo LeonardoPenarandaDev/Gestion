@@ -144,7 +144,7 @@
             <!-- Tarjetas de estadísticas -->
             <div class="stats-grid fade-in">
                 <!-- Personas -->
-                <div class="modern-card" style="padding: 2rem;">
+                <!--<div class="modern-card" style="padding: 2rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div>
                             <div class="counter" id="counter-personas">{{ $totalPersonas ?? 0 }}</div>
@@ -156,8 +156,8 @@
                             </svg>
                         </div>
                     </div>
-                    <span class="badge badge-green">Activo</span>
-                </div>
+                    <span class="badge badge-green">Activo</span> 
+                </div>-->
 
                 <!-- Puestos -->
                 <div class="modern-card" style="padding: 2rem;">
@@ -192,7 +192,7 @@
                 </div>
 
                 <!-- Coordinadores -->
-                <div class="modern-card" style="padding: 2rem;">
+                <!-- <div class="modern-card" style="padding: 2rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div>
                             <div class="counter" id="counter-coordinadores">{{ $totalCoordinadores ?? 0 }}</div>
@@ -205,12 +205,12 @@
                         </div>
                     </div>
                     <span class="badge badge-purple">Líder</span>
-                </div>
+                </div>-->
             </div>
 
             <!-- Enlaces rápidos -->
             <div class="management-grid fade-in">
-                <!-- Gestión de Personas -->
+                <!-- Gestión de Personas 
                 <div class="modern-card" style="padding: 2rem;">
                     <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
                         <div class="icon-circle icon-blue" style="width: 50px; height: 50px; margin-right: 1rem;">
@@ -236,7 +236,7 @@
                             Agregar Nueva Persona
                         </a>
                     </div>
-                </div>
+                </div>-->
 
                 <!-- Gestión de Puestos -->
                 <div class="modern-card" style="padding: 2rem;">

@@ -325,32 +325,33 @@
                         <div class="form-grid">
                             <!-- FK Zona -->
                             <div class="form-group">
-                                <label for="fk_id_zona" class="form-label required">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <label for="fk_id_zona" class="form-label required">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                Zona Asignada
+                            </label>
+                            <select name="fk_id_zona" id="fk_id_zona" class="form-select" required>
+                                <option value="">Seleccione una zona</option>
+                                @if(isset($zonas))
+                                    @foreach($zonas as $zona)
+                                        <option value="{{ $zona->zona }}" {{ old('fk_id_zona') == $zona->zona ? 'selected' : '' }}>
+                                            Zona {{ $zona->zona }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            
+                            @error('fk_id_zona')
+                                <div class="error-message">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
-                                    Zona Asignada
-                                </label>
-                                <select name="fk_id_zona" id="fk_id_zona" class="form-select" required>
-                                    <option value="">Seleccione una zona</option>
-                                    @if(isset($zonas))
-                                        @foreach($zonas as $zona)
-                                            <option value="{{ $zona->id }}" {{ old('fk_id_zona') == $zona->id ? 'selected' : '' }}>
-                                                Zona {{ $zona->zona }} - {{ $zona->nombre ?? 'Sin nombre' }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                                @error('fk_id_zona')
-                                    <div class="error-message">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
 
                             <!-- FK Puesto -->
                             <div class="form-group">
@@ -372,6 +373,57 @@
                                     </div>
                                 @enderror
                             </div>
+                            
+
+                            <!--    agregando lugar de votacion -->
+
+                            <div class="form-group">
+                                <label for="fk_id_nombre" class="form-label required">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                    Nombre del Puesto
+                                </label>
+                                <select name="fk_id_nombre" id="fk_id_nombre" class="form-select" required>
+                                    <option value="">Nombre del puesto</option>
+                                </select>
+                                @error('fk_id_nombre')
+                                    <div class="error-message">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+
+
+                            <!--    agregando lugar de votacion -->
+
+                            <div class="form-group">
+                                <label for="fk_id_direccion" class="form-label required">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                    Direccion del Puesto
+                                </label>
+                                <select name="fk_id_direccion" id="fk_id_direccion" class="form-select" required>
+                                    <option value="">Direccion del Puesto</option>
+                                </select>
+                                @error('fk_id_direccion')
+                                    <div class="error-message">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+
+
+
                         </div>
 
                         <!-- Información Personal -->
@@ -538,143 +590,192 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-focus en el primer campo
-            document.getElementById('fk_id_zona').focus();
-            
-            // Datos de puestos por zona (esto debería venir del backend)
-            const puestosPorZona = @json($puestosPorZona ?? []);
-            
-            const zonaSelect = document.getElementById('fk_id_zona');
-            const puestoSelect = document.getElementById('fk_id_puesto');
-            const puestoInfo = document.getElementById('puesto-info');
-            const puestoDetails = document.getElementById('puesto-details');
-            
-            // Función para actualizar puestos según la zona seleccionada
-            zonaSelect.addEventListener('change', function() {
-                const zonaId = this.value;
-                puestoSelect.innerHTML = '<option value="">Seleccione un puesto</option>';
-                puestoInfo.style.display = 'none';
+    // Auto-focus en el primer campo
+    document.getElementById('fk_id_zona').focus();
+    
+    // Datos de puestos por zona desde el backend
+    const puestosPorZona = @json($puestosPorZona ?? []);
+    console.log('Puestos por zona:', puestosPorZona); // Para debug
+    
+    const zonaSelect = document.getElementById('fk_id_zona');
+    const puestoSelect = document.getElementById('fk_id_puesto');
+    const nombreSelect = document.getElementById('fk_id_nombre');
+    const direccionSelect = document.getElementById('fk_id_direccion');
+    const puestoInfo = document.getElementById('puesto-info');
+    const puestoDetails = document.getElementById('puesto-details');
+    
+    // Función para actualizar puestos según la zona seleccionada
+    zonaSelect.addEventListener('change', function() {
+        const zonaId = this.value;
+        
+        // Limpiar todos los selectores
+        puestoSelect.innerHTML = '<option value="">Seleccione un puesto</option>';
+        nombreSelect.innerHTML = '<option value="">Seleccione nombre del puesto</option>';
+        direccionSelect.innerHTML = '<option value="">Seleccione dirección</option>';
+        puestoInfo.style.display = 'none';
+        
+        if (zonaId && puestosPorZona[zonaId] && puestosPorZona[zonaId].length > 0) {
+            puestosPorZona[zonaId].forEach(puesto => {
+                // Opción para Puesto Asignado
+                const puestoOption = document.createElement('option');
+                puestoOption.value = puesto.id;
+                puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre}`;
+                puestoOption.dataset.info = JSON.stringify(puesto);
+                puestoSelect.appendChild(puestoOption);
                 
-                if (zonaId && puestosPorZona[zonaId]) {
-                    puestosPorZona[zonaId].forEach(puesto => {
-                        const option = document.createElement('option');
-                        option.value = puesto.id;
-                        option.textContent = `${puesto.puesto} - ${puesto.nombre}`;
-                        option.dataset.info = JSON.stringify(puesto);
-                        puestoSelect.appendChild(option);
-                    });
-                    puestoSelect.disabled = false;
+                // Opción para Nombre del Puesto
+                const nombreOption = document.createElement('option');
+                nombreOption.value = puesto.id;
+                nombreOption.textContent = puesto.nombre;
+                nombreOption.dataset.info = JSON.stringify(puesto);
+                nombreSelect.appendChild(nombreOption);
+                
+                // Opción para Dirección del Puesto
+                const direccionOption = document.createElement('option');
+                direccionOption.value = puesto.id;
+                direccionOption.textContent = puesto.direccion;
+                direccionOption.dataset.info = JSON.stringify(puesto);
+                direccionSelect.appendChild(direccionOption);
+            });
+            
+            puestoSelect.disabled = false;
+            nombreSelect.disabled = false;
+            direccionSelect.disabled = false;
+        } else {
+            puestoSelect.disabled = true;
+            nombreSelect.disabled = true;
+            direccionSelect.disabled = true;
+            console.warn('No hay puestos para la zona:', zonaId);
+        }
+    });
+    
+    // Mostrar información cuando se selecciona un puesto
+    puestoSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.dataset.info) {
+            const puesto = JSON.parse(selectedOption.dataset.info);
+            puestoDetails.innerHTML = `
+                <div style="margin-top: 0.5rem;">
+                    <strong>Nombre:</strong> ${puesto.nombre}<br>
+                    <strong>Dirección:</strong> ${puesto.direccion}<br>
+                    <strong>Total mesas disponibles:</strong> ${puesto.total_mesas}
+                </div>
+            `;
+            puestoInfo.style.display = 'block';
+            
+            // Sincronizar con los otros selectores
+            nombreSelect.value = puesto.id;
+            direccionSelect.value = puesto.id;
+            
+            // Actualizar el máximo de mesas permitidas
+            document.getElementById('mesas').max = puesto.total_mesas || 99;
+        } else {
+            puestoInfo.style.display = 'none';
+        }
+    });
+    
+    // Sincronizar los selectores entre sí
+    nombreSelect.addEventListener('change', function() {
+        if (this.value) {
+            puestoSelect.value = this.value;
+            direccionSelect.value = this.value;
+            puestoSelect.dispatchEvent(new Event('change'));
+        }
+    });
+    
+    direccionSelect.addEventListener('change', function() {
+        if (this.value) {
+            puestoSelect.value = this.value;
+            nombreSelect.value = this.value;
+            puestoSelect.dispatchEvent(new Event('change'));
+        }
+    });
+    
+    // Validar número de mesas
+    const mesasInput = document.getElementById('mesas');
+    mesasInput.addEventListener('input', function() {
+        const max = parseInt(this.max) || 99;
+        if (this.value < 1) this.value = 1;
+        if (this.value > max) {
+            this.value = max;
+            this.style.borderColor = '#ef4444';
+            setTimeout(() => {
+                this.style.borderColor = '#e5e7eb';
+            }, 2000);
+        }
+    });
+
+    // Formatear documento (solo números)
+    const documentoInput = document.getElementById('documento');
+    documentoInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+    });
+
+    // Capitalizar nombres automáticamente
+    const nombreInput = document.getElementById('nombre');
+    nombreInput.addEventListener('input', function() {
+        const words = this.value.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            if (words[i].length > 0) {
+                words[i] = words[i][0].toUpperCase() + words[i].slice(1).toLowerCase();
+            }
+        }
+        this.value = words.join(' ');
+    });
+
+    // Contadores de caracteres
+    const limitedInputs = [
+        { element: document.getElementById('nombre'), limit: 30 },
+        { element: document.getElementById('alias'), limit: 20 }
+    ];
+
+    limitedInputs.forEach(({ element, limit }) => {
+        if (element) {
+            const counter = document.createElement('div');
+            counter.style.cssText = 'font-size: 0.75rem; color: #6b7280; text-align: right; margin-top: 0.25rem;';
+            counter.textContent = `0/${limit} caracteres`;
+            
+            element.parentNode.appendChild(counter);
+            
+            element.addEventListener('input', function() {
+                const current = this.value.length;
+                counter.textContent = `${current}/${limit} caracteres`;
+                
+                if (current > limit * 0.9) {
+                    counter.style.color = '#ef4444';
+                } else if (current > limit * 0.7) {
+                    counter.style.color = '#f59e0b';
                 } else {
-                    puestoSelect.disabled = true;
+                    counter.style.color = '#6b7280';
                 }
             });
             
-            // Mostrar información del puesto seleccionado
-            puestoSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption.dataset.info) {
-                    const puesto = JSON.parse(selectedOption.dataset.info);
-                    puestoDetails.innerHTML = `
-                        <div style="margin-top: 0.5rem;">
-                            <strong>Nombre:</strong> ${puesto.nombre}<br>
-                            <strong>Dirección:</strong> ${puesto.direccion}<br>
-                            <strong>Total mesas disponibles:</strong> ${puesto.total_mesas}
-                        </div>
-                    `;
-                    puestoInfo.style.display = 'block';
-                    
-                    // Actualizar el máximo de mesas permitidas
-                    document.getElementById('mesas').max = puesto.total_mesas;
-                } else {
-                    puestoInfo.style.display = 'none';
-                }
-            });
-            
-            // Validar número de mesas
-            const mesasInput = document.getElementById('mesas');
-            mesasInput.addEventListener('input', function() {
-                const max = parseInt(this.max) || 99;
-                if (this.value < 1) this.value = 1;
-                if (this.value > max) {
-                    this.value = max;
+            if (element.value) {
+                element.dispatchEvent(new Event('input'));
+            }
+        }
+    });
+
+    // Validación en tiempo real para campos requeridos
+    const requiredInputs = [
+        document.getElementById('fk_id_zona'),
+        document.getElementById('fk_id_puesto'),
+        document.getElementById('documento'),
+        document.getElementById('nombre'),
+        document.getElementById('mesas')
+    ];
+
+    requiredInputs.forEach(input => {
+        if (input) {
+            input.addEventListener('blur', function() {
+                if (!this.value.trim()) {
                     this.style.borderColor = '#ef4444';
-                    setTimeout(() => {
-                        this.style.borderColor = '#e5e7eb';
-                    }, 2000);
+                } else {
+                    this.style.borderColor = '#10b981';
                 }
             });
-
-            // Formatear documento (solo números)
-            const documentoInput = document.getElementById('documento');
-            documentoInput.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '');
-            });
-
-            // Capitalizar nombres automáticamente
-            const nombreInput = document.getElementById('nombre');
-            nombreInput.addEventListener('input', function() {
-                const words = this.value.split(' ');
-                for (let i = 0; i < words.length; i++) {
-                    if (words[i].length > 0) {
-                        words[i] = words[i][0].toUpperCase() + words[i].slice(1).toLowerCase();
-                    }
-                }
-                this.value = words.join(' ');
-            });
-
-            // Contadores de caracteres
-            const limitedInputs = [
-                { element: document.getElementById('nombre'), limit: 30 },
-                { element: document.getElementById('alias'), limit: 20 }
-            ];
-
-            limitedInputs.forEach(({ element, limit }) => {
-                if (element) {
-                    const counter = document.createElement('div');
-                    counter.style.cssText = 'font-size: 0.75rem; color: #6b7280; text-align: right; margin-top: 0.25rem;';
-                    counter.textContent = `0/${limit} caracteres`;
-                    
-                    element.parentNode.appendChild(counter);
-                    
-                    element.addEventListener('input', function() {
-                        const current = this.value.length;
-                        counter.textContent = `${current}/${limit} caracteres`;
-                        
-                        if (current > limit * 0.9) {
-                            counter.style.color = '#ef4444';
-                        } else if (current > limit * 0.7) {
-                            counter.style.color = '#f59e0b';
-                        } else {
-                            counter.style.color = '#6b7280';
-                        }
-                    });
-                    
-                    if (element.value) {
-                        element.dispatchEvent(new Event('input'));
-                    }
-                }
-            });
-
-            // Validación en tiempo real para campos requeridos
-            const requiredInputs = [
-                document.getElementById('fk_id_zona'),
-                document.getElementById('fk_id_puesto'),
-                document.getElementById('documento'),
-                document.getElementById('nombre'),
-                document.getElementById('mesas')
-            ];
-
-            requiredInputs.forEach(input => {
-                if (input) {
-                    input.addEventListener('blur', function() {
-                        if (!this.value.trim()) {
-                            this.style.borderColor = '#ef4444';
-                        } else {
-                            this.style.borderColor = '#10b981';
-                        }
-                    });
-                }
-            });
-        });
+        }
+    });
+});
     </script>
 </x-app-layout>

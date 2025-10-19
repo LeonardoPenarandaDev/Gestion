@@ -24,9 +24,39 @@ class TestigoController extends Controller
      */
     public function create()
     {
-        $puestos = Puesto::orderBy('zona')->orderBy('puesto')->get();
-        $zonas = Puesto::select('zona')->distinct()->orderBy('zona')->get();
-        return view('testigos.create', compact('puestos', 'zonas'));
+        // Obtener todas las zonas únicas (números)
+        $zonas = Puesto::select('zona')
+            ->distinct()
+            ->orderBy('zona')
+            ->get();
+        
+        // Obtener puestos agrupados por zona con información completa
+        $puestosPorZona = [];
+        
+        foreach ($zonas as $zona) {
+            // Usar el número de zona como clave
+            $zonaNumero = (string)$zona->zona;
+            
+            $puestosPorZona[$zonaNumero] = Puesto::where('zona', $zona->zona)
+                ->select('id', 'puesto', 'nombre', 'direccion', 'total_mesas', 'zona')
+                ->orderBy('puesto')
+                ->get()
+                ->map(function($puesto) {
+                    return [
+                        'id' => $puesto->id,
+                        'puesto' => $puesto->puesto,
+                        'nombre' => $puesto->nombre ?? 'Sin nombre',
+                        'direccion' => $puesto->direccion ?? 'Sin dirección',
+                        'total_mesas' => $puesto->total_mesas ?? 0,
+                    ];
+                })
+                ->toArray();
+        }
+        
+        return view('testigos.create', [
+            'zonas' => $zonas,
+            'puestosPorZona' => $puestosPorZona,
+        ]);
     }
 
     /**
@@ -35,16 +65,21 @@ class TestigoController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'fk_id_zona' => 'required|string|max:2',
+            'fk_id_zona' => 'required|string|max:50',
             'fk_id_puesto' => 'required|exists:puesto,id',
-            'mesas' => 'nullable|integer|min:0',
+            'documento' => 'required|string|max:20|unique:testigo,documento',
+            'nombre' => 'required|string|max:30',
+            'mesas' => 'required|integer|min:1',
             'alias' => 'nullable|string|max:20'
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
             'fk_id_puesto.required' => 'El puesto es obligatorio',
             'fk_id_puesto.exists' => 'El puesto seleccionado no existe',
-            'mesas.integer' => 'El número de mesas debe ser un entero',
-            'mesas.min' => 'El número de mesas no puede ser negativo'
+            'documento.required' => 'El documento es obligatorio',
+            'documento.unique' => 'Este documento ya está registrado',
+            'nombre.required' => 'El nombre es obligatorio',
+            'mesas.required' => 'El número de mesas es obligatorio',
+            'mesas.min' => 'Debe asignar al menos 1 mesa',
         ]);
 
         if ($validator->fails()) {
@@ -53,10 +88,15 @@ class TestigoController extends Controller
                            ->withInput();
         }
 
-        Testigo::create($request->all());
-
-        return redirect()->route('testigos.index')
-                        ->with('success', 'Testigo creado exitosamente.');
+        try {
+            Testigo::create($request->all());
+            return redirect()->route('testigos.index')
+                            ->with('success', 'Testigo creado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->withErrors(['error' => 'Error al crear el testigo: ' . $e->getMessage()])
+                           ->withInput();
+        }
     }
 
     /**
@@ -73,9 +113,39 @@ class TestigoController extends Controller
      */
     public function edit(Testigo $testigo)
     {
-        $puestos = Puesto::orderBy('zona')->orderBy('puesto')->get();
-        $zonas = Puesto::select('zona')->distinct()->orderBy('zona')->get();
-        return view('testigos.edit', compact('testigo', 'puestos', 'zonas'));
+        // Obtener todas las zonas únicas
+        $zonas = Puesto::select('zona')
+            ->distinct()
+            ->orderBy('zona')
+            ->get();
+        
+        // Obtener puestos agrupados por zona
+        $puestosPorZona = [];
+        
+        foreach ($zonas as $zona) {
+            $zonaNumero = (string)$zona->zona;
+            
+            $puestosPorZona[$zonaNumero] = Puesto::where('zona', $zona->zona)
+                ->select('id', 'puesto', 'nombre', 'direccion', 'total_mesas', 'zona')
+                ->orderBy('puesto')
+                ->get()
+                ->map(function($puesto) {
+                    return [
+                        'id' => $puesto->id,
+                        'puesto' => $puesto->puesto,
+                        'nombre' => $puesto->nombre ?? 'Sin nombre',
+                        'direccion' => $puesto->direccion ?? 'Sin dirección',
+                        'total_mesas' => $puesto->total_mesas ?? 0,
+                    ];
+                })
+                ->toArray();
+        }
+        
+        return view('testigos.edit', [
+            'testigo' => $testigo,
+            'zonas' => $zonas,
+            'puestosPorZona' => $puestosPorZona,
+        ]);
     }
 
     /**
@@ -84,16 +154,21 @@ class TestigoController extends Controller
     public function update(Request $request, Testigo $testigo)
     {
         $validator = Validator::make($request->all(), [
-            'fk_id_zona' => 'required|string|max:2',
+            'fk_id_zona' => 'required|string|max:50',
             'fk_id_puesto' => 'required|exists:puesto,id',
-            'mesas' => 'nullable|integer|min:0',
+            'documento' => 'required|string|max:20|unique:testigo,documento,' . $testigo->id,
+            'nombre' => 'required|string|max:30',
+            'mesas' => 'required|integer|min:1',
             'alias' => 'nullable|string|max:20'
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
             'fk_id_puesto.required' => 'El puesto es obligatorio',
             'fk_id_puesto.exists' => 'El puesto seleccionado no existe',
-            'mesas.integer' => 'El número de mesas debe ser un entero',
-            'mesas.min' => 'El número de mesas no puede ser negativo'
+            'documento.required' => 'El documento es obligatorio',
+            'documento.unique' => 'Este documento ya está registrado',
+            'nombre.required' => 'El nombre es obligatorio',
+            'mesas.required' => 'El número de mesas es obligatorio',
+            'mesas.min' => 'Debe asignar al menos 1 mesa',
         ]);
 
         if ($validator->fails()) {
@@ -102,10 +177,15 @@ class TestigoController extends Controller
                            ->withInput();
         }
 
-        $testigo->update($request->all());
-
-        return redirect()->route('testigos.index')
-                        ->with('success', 'Testigo actualizado exitosamente.');
+        try {
+            $testigo->update($request->all());
+            return redirect()->route('testigos.index')
+                            ->with('success', 'Testigo actualizado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->withErrors(['error' => 'Error al actualizar el testigo: ' . $e->getMessage()])
+                           ->withInput();
+        }
     }
 
     /**

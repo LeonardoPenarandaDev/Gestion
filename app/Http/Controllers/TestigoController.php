@@ -64,12 +64,15 @@ class TestigoController extends Controller
      */
     public function store(Request $request)
     {
+        // Debug: Ver qué datos se están recibiendo
+        \Log::info('Datos recibidos en store:', $request->all());
+        
         $validator = Validator::make($request->all(), [
-            'fk_id_zona' => 'required|string|max:50',
-            'fk_id_puesto' => 'required|exists:puesto,id',
+            'fk_id_zona' => 'required|string',
+            'fk_id_puesto' => 'required|numeric|exists:puesto,id',
             'documento' => 'required|string|max:20|unique:testigo,documento',
             'nombre' => 'required|string|max:30',
-            'mesas' => 'required|integer|min:1',
+            'mesas' => 'required|numeric|min:1',
             'alias' => 'nullable|string|max:20'
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
@@ -83,16 +86,28 @@ class TestigoController extends Controller
         ]);
 
         if ($validator->fails()) {
+            \Log::warning('Errores de validación:', $validator->errors()->toArray());
             return redirect()->back()
                            ->withErrors($validator)
                            ->withInput();
         }
 
         try {
-            Testigo::create($request->all());
+            $testigo = Testigo::create([
+                'fk_id_zona' => $request->fk_id_zona,
+                'fk_id_puesto' => $request->fk_id_puesto,
+                'documento' => $request->documento,
+                'nombre' => $request->nombre,
+                'mesas' => $request->mesas,
+                'alias' => $request->alias ?? null
+            ]);
+            
+            \Log::info('Testigo creado exitosamente:', $testigo->toArray());
+            
             return redirect()->route('testigos.index')
                             ->with('success', 'Testigo creado exitosamente.');
         } catch (\Exception $e) {
+            \Log::error('Error al crear testigo:', ['error' => $e->getMessage()]);
             return redirect()->back()
                            ->withErrors(['error' => 'Error al crear el testigo: ' . $e->getMessage()])
                            ->withInput();

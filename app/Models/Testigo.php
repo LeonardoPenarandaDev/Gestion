@@ -26,7 +26,6 @@ class Testigo extends Model
 
     /**
      * Relación con Puesto
-     * fk_id_zona almacena el nombre de la zona (texto)
      * fk_id_puesto almacena el ID del puesto (numérico)
      */
     public function puesto()

@@ -367,77 +367,90 @@
 
             <!-- Información de Asignación -->
             <div class="detail-card">
-                <div class="card-header">
-                    <h4 class="card-title">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                        </svg>
-                        Asignación Electoral
-                    </h4>
+    <div class="card-header">
+        <h4 class="card-title">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+            </svg>
+            Asignación Electoral
+        </h4>
+    </div>
+    <div class="card-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Zona
                 </div>
-                <div class="card-body">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <div class="info-label">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                Zona
-                            </div>
-                            <div class="info-value">
-                                @if($testigo->zona)
-                                    <span class="zone-badge">Zona {{ $testigo->zona->zona ?? 'N/A' }}</span>
-                                @else
-                                    <span class="info-value empty">Sin zona asignada</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="info-item">
-                            <div class="info-label">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                                Puesto
-                            </div>
-                            <div class="info-value">
-                                @if($testigo->puesto)
-                                    <span class="puesto-badge">{{ $testigo->puesto->puesto ?? 'N/A' }}</span>
-                                @else
-                                    <span class="info-value empty">Sin puesto asignado</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="info-item">
-                            <div class="info-label">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                </svg>
-                                Mesas Asignadas
-                            </div>
-                            <div class="info-value">
-                                <span class="mesa-count">{{ $testigo->mesas ?? '0' }} mesa{{ ($testigo->mesas ?? 0) == 1 ? '' : 's' }}</span>
-                            </div>
-                        </div>
-
-                        @if($testigo->puesto)
-                        <div class="info-item">
-                            <div class="info-label">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                                Ubicación del Puesto
-                            </div>
-                            <div class="info-value" style="font-size: 0.9rem;">
-                                {{ $testigo->puesto->nombre ?? 'N/A' }}
-                            </div>
-                        </div>
-                        @endif
-                    </div>
+                <div class="info-value">
+                    @if($testigo->fk_id_zona)
+                        <span class="zone-badge">Zona {{ $testigo->fk_id_zona }}</span>
+                    @else
+                        <span class="info-value empty">Sin zona asignada</span>
+                    @endif
                 </div>
             </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Puesto
+                </div>
+                <div class="info-value">
+                    @if($testigo->puesto)
+                        <span class="puesto-badge">{{ $testigo->puesto->puesto ?? 'N/A' }}</span>
+                    @else
+                        <span class="info-value empty">Sin puesto asignado</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    Mesas Asignadas
+                </div>
+                <div class="info-value">
+                    <span class="mesa-count">{{ $testigo->mesas ?? '0' }} mesa{{ ($testigo->mesas ?? 0) == 1 ? '' : 's' }}</span>
+                </div>
+            </div>
+
+            @if($testigo->puesto)
+            <div class="info-item">
+                <div class="info-label">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                    Nombre del Puesto
+                </div>
+                <div class="info-value" style="font-size: 0.9rem;">
+                    {{ $testigo->puesto->nombre ?? 'N/A' }}
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Dirección del Puesto
+                </div>
+                <div class="info-value" style="font-size: 0.9rem;">
+                    {{ $testigo->puesto->direccion ?? 'N/A' }}
+                </div>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
 
             <!-- Historial de Registro -->
             <div class="detail-card">

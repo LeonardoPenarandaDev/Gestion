@@ -378,48 +378,41 @@
                             <!--    agregando lugar de votacion -->
 
                             <div class="form-group">
-                                <label for="fk_id_nombre" class="form-label required">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                    </svg>
-                                    Nombre del Puesto
-                                </label>
-                                <select name="fk_id_nombre" id="fk_id_nombre" class="form-select" required>
-                                    <option value="">Nombre del puesto</option>
-                                </select>
-                                @error('fk_id_nombre')
-                                    <div class="error-message">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                            <label for="fk_id_nombre" class="form-label required">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                                Nombre del Puesto
+                            </label>
+                            <select id="fk_id_nombre" class="form-select" disabled>
+                                <option value="">Seleccione nombre del puesto</option>
+                            </select>
+                            <small style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                                Se actualiza automáticamente al seleccionar el puesto
+                            </small>
+                        </div>
+
+                        <!-- Dirección del Puesto - SOLO PARA VISUALIZACIÓN, NO ENVÍA DATOS -->
+                        <div class="form-group">
+                            <label for="fk_id_direccion" class="form-label required">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                                Dirección del Puesto
+                            </label>
+                            <select id="fk_id_direccion" class="form-select" disabled>
+                                <option value="">Seleccione dirección</option>
+                            </select>
+                            <small style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                                Se actualiza automáticamente al seleccionar el puesto
+                            </small>
+                        </div>
 
 
 
                             <!--    agregando lugar de votacion -->
 
-                            <div class="form-group">
-                                <label for="fk_id_direccion" class="form-label required">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                    </svg>
-                                    Direccion del Puesto
-                                </label>
-                                <select name="fk_id_direccion" id="fk_id_direccion" class="form-select" required>
-                                    <option value="">Direccion del Puesto</option>
-                                </select>
-                                @error('fk_id_direccion')
-                                    <div class="error-message">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
+                            
 
 
 
@@ -594,6 +587,7 @@
     document.getElementById('fk_id_zona').focus();
     
     // Datos de puestos por zona desde el backend
+    // Estructura: { "Norte": [...], "Sur": [...], "Centro": [...] }
     const puestosPorZona = @json($puestosPorZona ?? []);
     console.log('Puestos por zona:', puestosPorZona); // Para debug
     
@@ -606,7 +600,7 @@
     
     // Función para actualizar puestos según la zona seleccionada
     zonaSelect.addEventListener('change', function() {
-        const zonaId = this.value;
+        const zonaId = this.value; // Aquí zonaId es el nombre de la zona (ej: "Norte")
         
         // Limpiar todos los selectores
         puestoSelect.innerHTML = '<option value="">Seleccione un puesto</option>';
@@ -645,7 +639,9 @@
             puestoSelect.disabled = true;
             nombreSelect.disabled = true;
             direccionSelect.disabled = true;
-            console.warn('No hay puestos para la zona:', zonaId);
+            if (zonaId) {
+                console.warn('No hay puestos para la zona:', zonaId);
+            }
         }
     });
     
@@ -674,22 +670,8 @@
         }
     });
     
-    // Sincronizar los selectores entre sí
-    nombreSelect.addEventListener('change', function() {
-        if (this.value) {
-            puestoSelect.value = this.value;
-            direccionSelect.value = this.value;
-            puestoSelect.dispatchEvent(new Event('change'));
-        }
-    });
-    
-    direccionSelect.addEventListener('change', function() {
-        if (this.value) {
-            puestoSelect.value = this.value;
-            nombreSelect.value = this.value;
-            puestoSelect.dispatchEvent(new Event('change'));
-        }
-    });
+    // Nota: nombreSelect y direccionSelect son solo para visualización
+    // No se envían al servidor, solo se actualizan cuando cambia puestoSelect
     
     // Validar número de mesas
     const mesasInput = document.getElementById('mesas');
@@ -707,21 +689,25 @@
 
     // Formatear documento (solo números)
     const documentoInput = document.getElementById('documento');
-    documentoInput.addEventListener('input', function() {
-        this.value = this.value.replace(/\D/g, '');
-    });
+    if (documentoInput) {
+        documentoInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
 
     // Capitalizar nombres automáticamente
     const nombreInput = document.getElementById('nombre');
-    nombreInput.addEventListener('input', function() {
-        const words = this.value.split(' ');
-        for (let i = 0; i < words.length; i++) {
-            if (words[i].length > 0) {
-                words[i] = words[i][0].toUpperCase() + words[i].slice(1).toLowerCase();
+    if (nombreInput) {
+        nombreInput.addEventListener('input', function() {
+            const words = this.value.split(' ');
+            for (let i = 0; i < words.length; i++) {
+                if (words[i].length > 0) {
+                    words[i] = words[i][0].toUpperCase() + words[i].slice(1).toLowerCase();
+                }
             }
-        }
-        this.value = words.join(' ');
-    });
+            this.value = words.join(' ');
+        });
+    }
 
     // Contadores de caracteres
     const limitedInputs = [

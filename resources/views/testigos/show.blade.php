@@ -418,7 +418,7 @@
                     Mesas Asignadas
                 </div>
                 <div class="info-value">
-                    <span class="mesa-count">{{ $testigo->mesas ?? '0' }} mesa{{ ($testigo->mesas ?? 0) == 1 ? '' : 's' }}</span>
+                    <span class="mesa-count">Mesa {{ $testigo->mesas ?? '0' }}</span>
                 </div>
             </div>
 

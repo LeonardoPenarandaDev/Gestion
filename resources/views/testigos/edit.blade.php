@@ -339,7 +339,7 @@
 
                             <!-- Número de Mesas -->
                             <div class="form-group">
-                                <label for="mesas" class="form-label required">Número de Mesas Asignadas</label>
+                                <label for="mesas" class="form-label required">Número de Mesa Asignada</label>
                                 <input type="number" name="mesas" id="mesas" 
                                        value="{{ old('mesas', $testigo->mesas) }}"
                                        class="form-input"

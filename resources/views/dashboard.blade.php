@@ -174,7 +174,7 @@
                 <div class="modern-card" style="padding: 2rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         <div>
-                            <div class="counter" id="counter-mesas">{{ $Mesas ?? 0 }}</div>
+                            <div class="counter" id="counter-mesas">{{ $mesas ?? 0 }}</div>
                             <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Total Mesas</p>
                         </div>
                     </div>
@@ -328,6 +328,7 @@
             // Obtener valores reales y animar
             const personas = {{ $totalPersonas ?? 0 }};
             const puestos = {{ $totalPuestos ?? 0 }};
+            const mesas = {{ $totalMesas ?? 0 }};
             const testigos = {{ $totalTestigos ?? 0 }};
             const coordinadores = {{ $totalCoordinadores ?? 0 }};
 
@@ -339,6 +340,11 @@
             if (puestos > 0) {
                 document.getElementById('counter-puestos').textContent = '0';
                 setTimeout(() => animateCounter(document.getElementById('counter-puestos'), puestos), 400);
+            }
+
+            if (mesas > 0) {
+                document.getElementById('counter-mesas').textContent = '0';
+                setTimeout(() => animateCounter(document.getElementById('counter-mesas'), mesas), 800);
             }
             
             if (testigos > 0) {

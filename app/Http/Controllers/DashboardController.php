@@ -8,6 +8,7 @@ use App\Models\Testigo;
 use App\Models\InfoElectoral;
 use App\Models\InfoTestigo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -19,6 +20,13 @@ class DashboardController extends Controller
         // Estadísticas generales
         $totalPersonas = Persona::count();
         $totalPuestos = Puesto::count();
+        
+        // Total de mesas (suma del campo total_mesas de la tabla puestos)
+        $mesas = Puesto::sum('total_mesas') ?? 0;
+        
+        // Mesas cubiertas (testigos asignados)
+        $Mesas = Testigo::whereNotNull('fk_id_puesto')->count();
+        
         $totalTestigos = Testigo::count();
         $totalCoordinadores = InfoElectoral::coordinadores()->count();
         $totalLideres = InfoElectoral::lideres()->count();
@@ -54,6 +62,8 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'totalPersonas',
             'totalPuestos',
+            'mesas',           // Total de mesas (suma)
+            'Mesas',           // Mesas cubiertas (testigos asignados)
             'totalTestigos',
             'totalCoordinadores',
             'totalLideres',
@@ -109,17 +119,20 @@ class DashboardController extends Controller
             'resumen_general' => [
                 'personas' => Persona::count(),
                 'puestos' => Puesto::count(),
+                'mesas' => Puesto::sum('total_mesas') ?? 0,
                 'testigos' => Testigo::count(),
                 'coordinadores' => InfoElectoral::coordinadores()->count(),
                 'lideres' => InfoElectoral::lideres()->count(),
             ],
             'por_zona' => Puesto::selectRaw('zona, COUNT(*) as puestos, 
-                                           (SELECT COUNT(*) FROM testigo WHERE fk_id_zona = puesto.zona) as testigos')
+                                           (SELECT COUNT(*) FROM testigos WHERE fk_id_zona = puestos.zona) as testigos')
                                 ->groupBy('zona')
                                 ->orderBy('zona')
                                 ->get(),
             'personas_activas' => Persona::where('estado', 'activo')->count(),
-            'personas_inactivas' => Persona::where('estado', '!=', 'activo')->orWhereNull('estado')->count(),
+            'personas_inactivas' => Persona::where('estado', '!=', 'activo')
+                                          ->orWhereNull('estado')
+                                          ->count(),
         ];
 
         return view('estadisticas', compact('estadisticas'));

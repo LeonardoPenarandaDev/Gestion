@@ -166,11 +166,29 @@
                             <div class="counter" id="counter-puestos">{{ $totalPuestos ?? 0 }}</div>
                             <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Puestos</p>
                         </div>
-                        <div class="icon-circle icon-green">
-                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
+                    </div>
+                    <span class="badge badge-blue">Disponible</span>
+                </div>
+
+                <!--Mesas Totales -->
+                <div class="modern-card" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div class="counter" id="counter-mesas">{{ $Mesas ?? 0 }}</div>
+                            <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Total Mesas</p>
                         </div>
+                    </div>
+                    <span class="badge badge-blue">Disponible</span>
+                </div>
+
+                <!--Mesas Cubiertas -->
+                <div class="modern-card" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div class="counter" id="counter-mesas">{{ $Mesas ?? 0 }}</div>
+                            <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Mesas Cubiertas</p>
+                        </div>
+
                     </div>
                     <span class="badge badge-blue">Disponible</span>
                 </div>
@@ -181,11 +199,6 @@
                         <div>
                             <div class="counter" id="counter-testigos">{{ $totalTestigos ?? 0 }}</div>
                             <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Testigos</p>
-                        </div>
-                        <div class="icon-circle icon-yellow">
-                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
                         </div>
                     </div>
                     <span class="badge badge-yellow">Asignado</span>

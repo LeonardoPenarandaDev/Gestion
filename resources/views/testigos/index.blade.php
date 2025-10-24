@@ -300,7 +300,7 @@
         .stats-row {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             flex-wrap: wrap;
         }
         
@@ -373,11 +373,15 @@
 
                 <!-- Stats Section -->
                 @if(isset($testigos) && $testigos->count() > 0)
-                <div style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <div style="padding: 1rem 2rem; border-bottom: 0,1px solid rgba(0,0,0,0.05);">
                     <div class="stats-row">
                         <div class="stat-card">
                             <div class="stat-number">{{ $testigos->count() }}</div>
                             <div class="stat-label">Total Testigos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">{{ $testigos->count() }}</div>
+                            <div class="stat-label">Total Mesas</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-number">{{ $testigos->count() }}</div>

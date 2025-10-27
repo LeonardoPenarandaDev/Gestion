@@ -380,11 +380,11 @@
                             <div class="stat-label">Total Testigos</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">{{ $testigos->count() }}</div>
+                            <div class="stat-number">{{ $mesas ?? 0 }}</div>
                             <div class="stat-label">Total Mesas</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">{{ $testigos->count() }}</div>
+                            <div class="stat-number">{{ $Mesas ?? 0 }}</div>
                             <div class="stat-label">Mesas Cubiertas</div>
                         </div>
                         <div class="stat-card">

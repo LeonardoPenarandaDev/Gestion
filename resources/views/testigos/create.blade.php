@@ -481,28 +481,28 @@
 
                         <!-- Información de Contacto -->
                         <div class="form-grid">
-                            <!-- Número de Mesas -->
-                            <div class="form-group">
+                            <!-- Múltiples Mesas -->
+                            <div class="form-group form-grid-full">
                                 <label for="mesas" class="form-label required">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                                     </svg>
-                                    Número de Mesa Asignada
+                                    Mesas Asignadas
                                 </label>
-                                <div class="input-icon">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                    </svg>
-                                    <input type="number" name="mesas" id="mesas" 
-                                           value="{{ old('mesas', 1) }}"
-                                           class="form-input"
-                                           placeholder="1"
-                                           min="1"
-                                           max="99"
-                                           style="text-align: center; font-weight: 600;"
-                                           required>
+                                <div id="mesas-container" style="padding: 1rem; background: rgba(243, 244, 246, 0.5); border-radius: 12px; border: 2px solid #e5e7eb; min-height: 100px;">
+                                    <p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin: 2rem 0;">
+                                        Seleccione un puesto para ver las mesas disponibles
+                                    </p>
                                 </div>
                                 @error('mesas')
+                                    <div class="error-message">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                                @error('mesas.*')
                                     <div class="error-message">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -648,6 +648,8 @@
     // Mostrar información cuando se selecciona un puesto
     puestoSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
+        const mesasContainer = document.getElementById('mesas-container');
+        
         if (selectedOption.dataset.info) {
             const puesto = JSON.parse(selectedOption.dataset.info);
             puestoDetails.innerHTML = `
@@ -663,29 +665,61 @@
             nombreSelect.value = puesto.id;
             direccionSelect.value = puesto.id;
             
-            // Actualizar el máximo de mesas permitidas
-            document.getElementById('mesas').max = puesto.total_mesas || 99;
+            // Generar checkboxes para las mesas
+            const totalMesas = parseInt(puesto.total_mesas) || 0;
+            if (totalMesas > 0) {
+                let checkboxesHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.75rem;">';
+                
+                for (let i = 1; i <= totalMesas; i++) {
+                    checkboxesHTML += `
+                        <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="mesa-checkbox-label">
+                            <input type="checkbox" name="mesas[]" value="${i}" style="margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer;" class="mesa-checkbox">
+                            <span style="font-weight: 600; color: #374151;">Mesa ${i}</span>
+                        </label>
+                    `;
+                }
+                
+                checkboxesHTML += '</div>';
+                checkboxesHTML += '<div style="margin-top: 1rem; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-radius: 8px; display: none;" id="mesas-selected-info"><span style="color: #1e40af; font-weight: 500;">Mesas seleccionadas: <strong id="mesas-count">0</strong></span></div>';
+                
+                mesasContainer.innerHTML = checkboxesHTML;
+                
+                // Agregar event listeners a los checkboxes
+                const checkboxes = mesasContainer.querySelectorAll('.mesa-checkbox');
+                const labels = mesasContainer.querySelectorAll('.mesa-checkbox-label');
+                const selectedInfo = document.getElementById('mesas-selected-info');
+                const countSpan = document.getElementById('mesas-count');
+                
+                checkboxes.forEach((checkbox, index) => {
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            labels[index].style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                            labels[index].style.borderColor = '#667eea';
+                            labels[index].querySelector('span').style.color = 'white';
+                        } else {
+                            labels[index].style.background = 'white';
+                            labels[index].style.borderColor = '#e5e7eb';
+                            labels[index].querySelector('span').style.color = '#374151';
+                        }
+                        
+                        // Actualizar contador
+                        const selectedCount = mesasContainer.querySelectorAll('.mesa-checkbox:checked').length;
+                        countSpan.textContent = selectedCount;
+                        selectedInfo.style.display = selectedCount > 0 ? 'block' : 'none';
+                    });
+                });
+            } else {
+                mesasContainer.innerHTML = '<p style="color: #ef4444; font-size: 0.875rem; text-align: center; margin: 2rem 0;">Este puesto no tiene mesas disponibles</p>';
+            }
         } else {
             puestoInfo.style.display = 'none';
+            mesasContainer.innerHTML = '<p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin: 2rem 0;">Seleccione un puesto para ver las mesas disponibles</p>';
         }
     });
     
     // Nota: nombreSelect y direccionSelect son solo para visualización
     // No se envían al servidor, solo se actualizan cuando cambia puestoSelect
-    
-    // Validar número de mesas
-    const mesasInput = document.getElementById('mesas');
-    mesasInput.addEventListener('input', function() {
-        const max = parseInt(this.max) || 99;
-        if (this.value < 1) this.value = 1;
-        if (this.value > max) {
-            this.value = max;
-            this.style.borderColor = '#ef4444';
-            setTimeout(() => {
-                this.style.borderColor = '#e5e7eb';
-            }, 2000);
-        }
-    });
+
 
     // Formatear documento (solo números)
     const documentoInput = document.getElementById('documento');

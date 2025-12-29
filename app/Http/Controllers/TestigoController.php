@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Testigo;
 use App\Models\Puesto;
+use App\Models\Mesa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TestigoController extends Controller
 {
@@ -14,9 +17,14 @@ class TestigoController extends Controller
      */
     public function index()
     {
-        $testigos = Testigo::with(['puesto', 'infoElectoral', 'infoTestigo'])
+        $testigos = Testigo::with(['puesto', 'mesas'])
                           ->paginate(15);
-        return view('testigos.index', compact('testigos'));
+
+        // Calcular contadores para el dashboard
+        $totalMesas = Puesto::sum('total_mesas'); // Total de mesas disponibles según los puestos
+        $mesasCubiertas = Mesa::count(); // Total de mesas cubiertas (asignadas a testigos)
+
+        return view('testigos.index', compact('testigos', 'totalMesas', 'mesasCubiertas'));
     }
 
     /**
@@ -64,50 +72,85 @@ class TestigoController extends Controller
      */
     public function store(Request $request)
     {
-        // Debug: Ver qué datos se están recibiendo
-        \Log::info('Datos recibidos en store:', $request->all());
-        
         $validator = Validator::make($request->all(), [
-            'fk_id_zona' => 'required|string',
+            'fk_id_zona' => 'required|string|max:10',
             'fk_id_puesto' => 'required|numeric|exists:puesto,id',
             'documento' => 'required|string|max:20|unique:testigo,documento',
             'nombre' => 'required|string|max:30',
-            'mesas' => 'required|numeric|min:1',
+            'mesas' => 'required|array|min:1',
+            'mesas.*' => 'required|integer|min:1',
             'alias' => 'nullable|string|max:20'
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
+            'fk_id_zona.max' => 'La zona no puede exceder 10 caracteres',
             'fk_id_puesto.required' => 'El puesto es obligatorio',
             'fk_id_puesto.exists' => 'El puesto seleccionado no existe',
             'documento.required' => 'El documento es obligatorio',
             'documento.unique' => 'Este documento ya está registrado',
             'nombre.required' => 'El nombre es obligatorio',
-            'mesas.required' => 'El número de mesas es obligatorio',
+            'mesas.required' => 'Debe seleccionar al menos una mesa',
             'mesas.min' => 'Debe asignar al menos 1 mesa',
+            'mesas.*.integer' => 'Los números de mesa deben ser válidos',
+            'mesas.*.min' => 'Los números de mesa deben ser mayores a 0',
         ]);
 
+        // Validación adicional: verificar que las mesas estén dentro del rango del puesto
+        $validator->after(function ($validator) use ($request) {
+            if ($request->fk_id_puesto && $request->mesas) {
+                $puesto = Puesto::find($request->fk_id_puesto);
+
+                if ($puesto && $puesto->total_mesas) {
+                    foreach ($request->mesas as $numeroMesa) {
+                        if ($numeroMesa > $puesto->total_mesas) {
+                            $validator->errors()->add(
+                                'mesas',
+                                "La mesa {$numeroMesa} excede el total de mesas disponibles ({$puesto->total_mesas}) en el puesto seleccionado."
+                            );
+                        }
+                    }
+                }
+            }
+        });
+
         if ($validator->fails()) {
-            \Log::warning('Errores de validación:', $validator->errors()->toArray());
             return redirect()->back()
                            ->withErrors($validator)
                            ->withInput();
         }
 
         try {
+            DB::beginTransaction();
+            
+            // Crear el testigo
             $testigo = Testigo::create([
                 'fk_id_zona' => $request->fk_id_zona,
                 'fk_id_puesto' => $request->fk_id_puesto,
                 'documento' => $request->documento,
                 'nombre' => $request->nombre,
-                'mesas' => $request->mesas,
                 'alias' => $request->alias ?? null
             ]);
             
-            \Log::info('Testigo creado exitosamente:', $testigo->toArray());
+            // Crear las mesas asociadas
+            foreach ($request->mesas as $numeroMesa) {
+                Mesa::create([
+                    'testigo_id' => $testigo->id,
+                    'puesto_id' => $request->fk_id_puesto,
+                    'numero_mesa' => $numeroMesa,
+                ]);
+            }
             
+            DB::commit();
+            Log::info('Testigo creado exitosamente', ['testigo_id' => $testigo->id]);
+
             return redirect()->route('testigos.index')
                             ->with('success', 'Testigo creado exitosamente.');
         } catch (\Exception $e) {
-            \Log::error('Error al crear testigo:', ['error' => $e->getMessage()]);
+            DB::rollBack();
+            Log::error('Error al crear testigo', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
             return redirect()->back()
                            ->withErrors(['error' => 'Error al crear el testigo: ' . $e->getMessage()])
                            ->withInput();
@@ -119,7 +162,7 @@ class TestigoController extends Controller
      */
     public function show(Testigo $testigo)
     {
-        $testigo->load(['puesto', 'infoElectoral', 'infoTestigo']);
+        $testigo->load(['puesto', 'mesas']);
         return view('testigos.show', compact('testigo'));
     }
 
@@ -169,22 +212,44 @@ class TestigoController extends Controller
     public function update(Request $request, Testigo $testigo)
     {
         $validator = Validator::make($request->all(), [
-            'fk_id_zona' => 'required|string|max:50',
+            'fk_id_zona' => 'required|string|max:10',
             'fk_id_puesto' => 'required|exists:puesto,id',
             'documento' => 'required|string|max:20|unique:testigo,documento,' . $testigo->id,
             'nombre' => 'required|string|max:30',
-            'mesas' => 'required|integer|min:1',
+            'mesas' => 'required|array|min:1',
+            'mesas.*' => 'required|integer|min:1',
             'alias' => 'nullable|string|max:20'
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
+            'fk_id_zona.max' => 'La zona no puede exceder 10 caracteres',
             'fk_id_puesto.required' => 'El puesto es obligatorio',
             'fk_id_puesto.exists' => 'El puesto seleccionado no existe',
             'documento.required' => 'El documento es obligatorio',
             'documento.unique' => 'Este documento ya está registrado',
             'nombre.required' => 'El nombre es obligatorio',
-            'mesas.required' => 'El número de mesas es obligatorio',
+            'mesas.required' => 'Debe seleccionar al menos una mesa',
             'mesas.min' => 'Debe asignar al menos 1 mesa',
+            'mesas.*.integer' => 'Los números de mesa deben ser válidos',
+            'mesas.*.min' => 'Los números de mesa deben ser mayores a 0',
         ]);
+
+        // Validación adicional: verificar que las mesas estén dentro del rango del puesto
+        $validator->after(function ($validator) use ($request) {
+            if ($request->fk_id_puesto && $request->mesas) {
+                $puesto = Puesto::find($request->fk_id_puesto);
+
+                if ($puesto && $puesto->total_mesas) {
+                    foreach ($request->mesas as $numeroMesa) {
+                        if ($numeroMesa > $puesto->total_mesas) {
+                            $validator->errors()->add(
+                                'mesas',
+                                "La mesa {$numeroMesa} excede el total de mesas disponibles ({$puesto->total_mesas}) en el puesto seleccionado."
+                            );
+                        }
+                    }
+                }
+            }
+        });
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -193,10 +258,33 @@ class TestigoController extends Controller
         }
 
         try {
-            $testigo->update($request->all());
+            DB::beginTransaction();
+            
+            // Actualizar datos del testigo
+            $testigo->update([
+                'fk_id_zona' => $request->fk_id_zona,
+                'fk_id_puesto' => $request->fk_id_puesto,
+                'documento' => $request->documento,
+                'nombre' => $request->nombre,
+                'alias' => $request->alias ?? null
+            ]);
+            
+            // Sincronizar mesas: eliminar todas las existentes y crear las nuevas
+            $testigo->mesas()->delete();
+            
+            foreach ($request->mesas as $numeroMesa) {
+                Mesa::create([
+                    'testigo_id' => $testigo->id,
+                    'puesto_id' => $request->fk_id_puesto,
+                    'numero_mesa' => $numeroMesa,
+                ]);
+            }
+            
+            DB::commit();
             return redirect()->route('testigos.index')
                             ->with('success', 'Testigo actualizado exitosamente.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()
                            ->withErrors(['error' => 'Error al actualizar el testigo: ' . $e->getMessage()])
                            ->withInput();

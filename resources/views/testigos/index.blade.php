@@ -380,11 +380,11 @@
                             <div class="stat-label">Total Testigos</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">{{ $mesas ?? 0 }}</div>
+                            <div class="stat-number">{{ $totalMesas ?? 0 }}</div>
                             <div class="stat-label">Total Mesas</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-number">{{ $Mesas ?? 0 }}</div>
+                            <div class="stat-number">{{ $mesasCubiertas ?? 0 }}</div>
                             <div class="stat-label">Mesas Cubiertas</div>
                         </div>
                         <div class="stat-card">
@@ -495,9 +495,17 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="mesa-count">
-                                        Mesa {{ $testigo->mesas ?? '0' }}
-                                    </span>
+                                    @if($testigo->mesas && $testigo->mesas->count() > 0)
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                                            @foreach($testigo->mesas->sortBy('numero_mesa') as $mesa)
+                                                <span class="mesa-count" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">
+                                                    {{ $mesa->numero_mesa }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span style="color: #9ca3af; font-size: 0.875rem;">Sin mesas</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="status-badge status-active">

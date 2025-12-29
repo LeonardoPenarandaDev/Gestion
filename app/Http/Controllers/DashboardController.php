@@ -7,6 +7,7 @@ use App\Models\Puesto;
 use App\Models\Testigo;
 use App\Models\InfoElectoral;
 use App\Models\InfoTestigo;
+use App\Models\Mesa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,13 +21,13 @@ class DashboardController extends Controller
         // Estadísticas generales
         $totalPersonas = Persona::count();
         $totalPuestos = Puesto::count();
-        
-        // Total de mesas (suma del campo total_mesas de la tabla puestos)
-        $mesas = Puesto::sum('total_mesas') ?? 0;
-        
-        // Mesas cubiertas (testigos asignados)
-        $Mesas = Testigo::whereNotNull('fk_id_puesto')->count();
-        
+
+        // Total de mesas disponibles (suma del campo total_mesas de la tabla puestos)
+        $totalMesas = Puesto::sum('total_mesas') ?? 0;
+
+        // Mesas cubiertas/asignadas a testigos
+        $mesasCubiertas = Mesa::count();
+
         $totalTestigos = Testigo::count();
         $totalCoordinadores = InfoElectoral::coordinadores()->count();
         $totalLideres = InfoElectoral::lideres()->count();
@@ -62,8 +63,8 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'totalPersonas',
             'totalPuestos',
-            'mesas',           // Total de mesas (suma)
-            'Mesas',           // Mesas cubiertas (testigos asignados)
+            'totalMesas',
+            'mesasCubiertas',
             'totalTestigos',
             'totalCoordinadores',
             'totalLideres',

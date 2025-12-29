@@ -374,12 +374,3 @@ Si tienes preguntas o problemas:
 - Documentación de PHP y MySQL
 - Herramientas de desarrollo open source
 
----
-
-<p align="center">
-  Hecho con ❤️ para la gestión electoral
-</p>
-
-<p align="center">
-  <sub>🤖 Proyecto mejorado con <a href="https://claude.com/claude-code">Claude Code</a></sub>
-</p>

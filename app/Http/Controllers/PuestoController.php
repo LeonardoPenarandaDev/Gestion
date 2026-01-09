@@ -116,6 +116,10 @@ class PuestoController extends Controller
      */
     public function destroy(Puesto $puesto)
     {
+        if (!auth()->user()->canDelete()) {
+            return redirect()->route('puestos.index')->with('error', 'No tienes permisos para eliminar registros.');
+        }
+
         try {
             $puesto->delete();
             return redirect()->route('puestos.index')

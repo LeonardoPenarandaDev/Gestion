@@ -31,6 +31,9 @@ class DashboardController extends Controller
         $totalTestigos = Testigo::count();
         $totalCoordinadores = InfoElectoral::coordinadores()->count();
         $totalLideres = InfoElectoral::lideres()->count();
+        
+        // Mesas pendientes
+        $totalMesasPendientes = max(0, $totalMesas - $mesasCubiertas);
 
         // Personas por estado
         $personasPorEstado = Persona::selectRaw('estado, COUNT(*) as total')
@@ -68,6 +71,7 @@ class DashboardController extends Controller
             'totalTestigos',
             'totalCoordinadores',
             'totalLideres',
+            'totalMesasPendientes',
             'personasPorEstado',
             'puestosPorZona',
             'testigosPorZona',

@@ -21,9 +21,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // CRUD Resources
+    // CRUD Resources
     Route::resource('personas', PersonaController::class);
     Route::resource('puestos', PuestoController::class);
     Route::resource('testigos', TestigoController::class);
+
+    // User Management
+    Route::middleware('check_permission:manage-users')->group(function () {
+        Route::resource('users', \App\Http\Controllers\UserController::class);
+    });
 });
 
 require __DIR__.'/auth.php';

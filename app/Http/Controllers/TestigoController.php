@@ -46,7 +46,8 @@ class TestigoController extends Controller
             $zonaNumero = (string)$zona->zona;
             
             $puestosPorZona[$zonaNumero] = Puesto::where('zona', $zona->zona)
-                ->select('id', 'puesto', 'nombre', 'direccion', 'total_mesas', 'zona')
+                ->with(['mesas:puesto_id,numero_mesa']) // Eager load para obtener los números de mesa
+                ->withCount('mesas')
                 ->orderBy('puesto')
                 ->get()
                 ->map(function($puesto) {
@@ -56,6 +57,8 @@ class TestigoController extends Controller
                         'nombre' => $puesto->nombre ?? 'Sin nombre',
                         'direccion' => $puesto->direccion ?? 'Sin dirección',
                         'total_mesas' => $puesto->total_mesas ?? 0,
+                        'mesas_ocupadas' => $puesto->mesas_count ?? 0,
+                        'mesas_ocupadas_ids' => $puesto->mesas->pluck('numero_mesa')->toArray(), // Array de mesas ocupadas
                     ];
                 })
                 ->toArray();
@@ -296,6 +299,10 @@ class TestigoController extends Controller
      */
     public function destroy(Testigo $testigo)
     {
+        if (!auth()->user()->canDelete()) {
+            return redirect()->route('testigos.index')->with('error', 'No tienes permisos para eliminar registros.');
+        }
+
         try {
             $testigo->delete();
             return redirect()->route('testigos.index')

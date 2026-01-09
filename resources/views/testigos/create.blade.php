@@ -610,10 +610,24 @@
         
         if (zonaId && puestosPorZona[zonaId] && puestosPorZona[zonaId].length > 0) {
             puestosPorZona[zonaId].forEach(puesto => {
+                // Calcular disponibilidad
+                const mesasOcupadas = parseInt(puesto.mesas_ocupadas) || 0;
+                const totalMesas = parseInt(puesto.total_mesas) || 0;
+                const disponibles = totalMesas - mesasOcupadas;
+                const isFull = mesasOcupadas >= totalMesas;
+
                 // Opción para Puesto Asignado
                 const puestoOption = document.createElement('option');
                 puestoOption.value = puesto.id;
-                puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre}`;
+                
+                if (isFull) {
+                    puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (AGOTADO)`;
+                    puestoOption.disabled = true;
+                    puestoOption.style.color = '#ef4444'; // Rojo para resaltar que está lleno
+                } else {
+                    puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (${disponibles} disp.)`;
+                }
+
                 puestoOption.dataset.info = JSON.stringify(puesto);
                 puestoSelect.appendChild(puestoOption);
                 
@@ -667,16 +681,31 @@
             
             // Generar checkboxes para las mesas
             const totalMesas = parseInt(puesto.total_mesas) || 0;
+            const mesasOcupadas = puesto.mesas_ocupadas_ids || []; // Array de mesas ocupadas
+
             if (totalMesas > 0) {
                 let checkboxesHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.75rem;">';
                 
                 for (let i = 1; i <= totalMesas; i++) {
-                    checkboxesHTML += `
-                        <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="mesa-checkbox-label">
-                            <input type="checkbox" name="mesas[]" value="${i}" style="margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer;" class="mesa-checkbox">
-                            <span style="font-weight: 600; color: #374151;">Mesa ${i}</span>
-                        </label>
-                    `;
+                    const isOccupied = mesasOcupadas.includes(i) || mesasOcupadas.includes(String(i)); // Verificar ambos tipos
+                    
+                    if (isOccupied) {
+                        // Estilo para mesa ocupada
+                        checkboxesHTML += `
+                            <label style="display: flex; align-items: center; padding: 0.5rem; background: #f3f4f6; border: 2px solid #e5e7eb; border-radius: 8px; cursor: not-allowed; opacity: 0.7;" class="mesa-checkbox-label-disabled" title="Mesa ocupada">
+                                <input type="checkbox" name="mesas[]" value="${i}" style="margin-right: 0.5rem; width: 16px; height: 16px;" disabled checked onclick="return false;">
+                                <span style="font-weight: 600; color: #9ca3af; text-decoration: line-through;">Mesa ${i}</span>
+                            </label>
+                        `;
+                    } else {
+                        // Estilo para mesa disponible
+                        checkboxesHTML += `
+                            <label style="display: flex; align-items: center; padding: 0.5rem; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;" class="mesa-checkbox-label">
+                                <input type="checkbox" name="mesas[]" value="${i}" style="margin-right: 0.5rem; width: 16px; height: 16px; cursor: pointer;" class="mesa-checkbox">
+                                <span style="font-weight: 600; color: #374151;">Mesa ${i}</span>
+                            </label>
+                        `;
+                    }
                 }
                 
                 checkboxesHTML += '</div>';

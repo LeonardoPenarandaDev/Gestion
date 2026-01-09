@@ -117,7 +117,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 3rem;
         }
@@ -132,6 +132,148 @@
             animation: fadeIn 0.8s ease-out;
         }
         
+        /* Calendar Styles */
+        .calendar-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .calendar-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-month {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .calendar-nav button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-nav button:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .calendar-grid {
+            padding: 1.5rem;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+
+        .day:hover:not(.empty) {
+            background: #f3f4f6;
+        }
+
+        .day.today {
+            background: #ebf5ff;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .day.event {
+            background: #764ba2;
+            color: white;
+            box-shadow: 0 4px 6px rgba(118, 75, 162, 0.3);
+        }
+        
+        .day.event-congress {
+             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .event-list {
+            padding: 0 1.5rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-date {
+            font-weight: 700;
+            color: #4b5563;
+            width: 50px;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .event-date span {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+
+        .event-info {
+            margin-left: 1rem;
+        }
+
+        .event-title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .event-desc {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -193,6 +335,18 @@
                     <span class="badge badge-blue">Disponible</span>
                 </div>
 
+                <!-- mesas pendientes -->
+
+                <div class="modern-card" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div class="counter" id="counter-mesas-pendientes">{{ $totalMesasPendientes ?? 0 }}</div>
+                            <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Mesas Pendientes</p>
+                        </div>
+                    </div>
+                    <span class="badge badge-yellow">Pendiente</span>
+                </div>
+
                 <!-- Testigos -->
                 <div class="modern-card" style="padding: 2rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -203,6 +357,8 @@
                     </div>
                     <span class="badge badge-yellow">Asignado</span>
                 </div>
+
+                
 
                 <!-- Coordinadores -->
                 <!-- <div class="modern-card" style="padding: 2rem;">
@@ -219,6 +375,47 @@
                     </div>
                     <span class="badge badge-purple">Líder</span>
                 </div>-->
+                <!-- Calendario -->
+                <div class="calendar-card" style="grid-column: 1 / -1; margin-bottom: 2rem;">
+                    <div class="calendar-header">
+                        <div class="calendar-month" id="calendar-month"></div>
+                        <div class="calendar-nav">
+                            <button id="prev-month">&lt;</button>
+                            <button id="next-month">&gt;</button>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                        <div class="calendar-grid">
+                            <div class="weekdays">
+                                <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                            </div>
+                            <div class="days" id="calendar-days"></div>
+                        </div>
+                        <div class="event-list">
+                            <h3 style="margin: 1.5rem 0 1rem; color: #374151; font-weight: 600;">Próximas Elecciones</h3>
+                            
+                            <div class="event-item" onclick="jumpToDate(2, 2026)" style="cursor: pointer;" title="Ver en calendario">
+                                <div class="event-date">
+                                    08 <span>MAR</span>
+                                </div>
+                                <div class="event-info">
+                                    <div class="event-title">Elecciones Congreso</div>
+                                    <div class="event-desc">2026 - Votación Nacional</div>
+                                </div>
+                            </div>
+
+                            <div class="event-item" onclick="jumpToDate(4, 2026)" style="cursor: pointer;" title="Ver en calendario">
+                                <div class="event-date">
+                                    31 <span>MAY</span>
+                                </div>
+                                <div class="event-info">
+                                    <div class="event-title">Elecciones Presidencia</div>
+                                    <div class="event-desc">2026 - Primera Vuelta</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Enlaces rápidos -->
@@ -303,9 +500,36 @@
                             Agregar Nuevo Testigo
                         </a>
                     </div>
+                    </div>
+                @if(auth()->user()->canManageUsers())
+                <!-- Gestión de Usuarios -->
+                <div class="modern-card" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                        <div class="icon-circle icon-purple" style="width: 50px; height: 50px; margin-right: 1rem;">
+                            <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 style="color: #1f2937; font-size: 1.25rem; font-weight: bold; margin: 0;">Gestión de Usuarios</h3>
+                    </div>
+                    
+                    <div>
+                        <a href="{{ route('users.index') }}" class="btn-gradient">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline; margin-right: 0.5rem;" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Administrar Usuarios
+                        </a>
+                        <a href="{{ route('users.create') }}" class="btn-secondary">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline; margin-right: 0.5rem;" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Crear Usuario
+                        </a>
+                    </div>
                 </div>
+                @endif
             </div>
-        </div>
     </div>
 
     <script>
@@ -326,12 +550,13 @@
             }
 
             // Obtener valores reales y animar
-            const personas = {{ $totalPersonas ?? 0 }};
-            const puestos = {{ $totalPuestos ?? 0 }};
-            const totalMesas = {{ $totalMesas ?? 0 }};
-            const mesasCubiertas = {{ $mesasCubiertas ?? 0 }};
-            const testigos = {{ $totalTestigos ?? 0 }};
-            const coordinadores = {{ $totalCoordinadores ?? 0 }};
+            const personas = parseInt({{ $totalPersonas ?? 0 }});
+            const puestos = parseInt({{ $totalPuestos ?? 0 }});
+            const totalMesas = parseInt({{ $totalMesas ?? 0 }});
+            const mesasCubiertas = parseInt({{ $mesasCubiertas ?? 0 }});
+            const testigos = parseInt({{ $totalTestigos ?? 0 }});
+            const coordinadores = parseInt({{ $totalCoordinadores ?? 0 }});
+            const mesasPendientes = parseInt({{ $totalMesasPendientes ?? 0 }});
 
             if (personas > 0) {
                 document.getElementById('counter-personas').textContent = '0';
@@ -357,11 +582,106 @@
                 document.getElementById('counter-testigos').textContent = '0';
                 setTimeout(() => animateCounter(document.getElementById('counter-testigos'), testigos), 600);
             }
+
+            if (mesasPendientes > 0) {
+                document.getElementById('counter-mesas-pendientes').textContent = '0';
+                setTimeout(() => animateCounter(document.getElementById('counter-mesas-pendientes'), mesasPendientes), 900);
+            }
             
             if (coordinadores > 0) {
                 document.getElementById('counter-coordinadores').textContent = '0';
                 setTimeout(() => animateCounter(document.getElementById('counter-coordinadores'), coordinadores), 800);
             }
         });
+
+        // Global Calendar Logic (Outside DOMContentLoaded)
+        window.calendarDate = new Date();
+        window.calendarEvents = [
+            { day: 8, month: 2, year: 2026, title: 'Congreso', type: 'event-congress' },
+            { day: 31, month: 4, year: 2026, title: 'Presidencia', type: 'event' }
+        ];
+
+        window.renderCalendar = function() {
+            const date = window.calendarDate;
+            date.setDate(1);
+            
+            const calendarDays = document.getElementById('calendar-days');
+            const calendarMonth = document.getElementById('calendar-month');
+            
+            if (!calendarDays || !calendarMonth) return;
+
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            const firstDayIndex = date.getDay();
+            const lastDayIndex = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDay();
+            const nextDays = 7 - lastDayIndex - 1;
+
+            const months = [
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            ];
+
+            calendarMonth.innerHTML = `${months[date.getMonth()]} ${date.getFullYear()}`;
+
+            let days = "";
+
+            for (let x = firstDayIndex; x > 0; x--) {
+                days += `<div class="day empty"></div>`;
+            }
+
+            for (let i = 1; i <= lastDay; i++) {
+                let className = "day";
+                
+                const today = new Date();
+                if (
+                    i === today.getDate() &&
+                    date.getMonth() === today.getMonth() &&
+                    date.getFullYear() === today.getFullYear()
+                ) {
+                    className += " today";
+                }
+
+                const event = window.calendarEvents.find(e => e.day === i && e.month === date.getMonth() && e.year === date.getFullYear());
+                if (event) {
+                    className += " " + event.type;
+                    days += `<div class="${className}" title="${event.title}">${i}</div>`;
+                } else {
+                    days += `<div class="${className}">${i}</div>`;
+                }
+            }
+
+            for (let j = 1; j <= nextDays; j++) {
+                days += `<div class="day empty"></div>`;
+            }
+            
+            calendarDays.innerHTML = days;
+        };
+
+        window.jumpToDate = function(month, year) {
+            window.calendarDate.setMonth(month);
+            window.calendarDate.setFullYear(year);
+            window.renderCalendar();
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            window.renderCalendar();
+
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+
+            if (prevMonthBtn) {
+                prevMonthBtn.addEventListener('click', () => {
+                    window.calendarDate.setMonth(window.calendarDate.getMonth() - 1);
+                    window.renderCalendar();
+                });
+            }
+
+            if (nextMonthBtn) {
+                nextMonthBtn.addEventListener('click', () => {
+                    window.calendarDate.setMonth(window.calendarDate.getMonth() + 1);
+                    window.renderCalendar();
+                });
+            }
+        });
     </script>
+
 </x-app-layout>

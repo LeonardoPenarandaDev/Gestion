@@ -113,6 +113,10 @@ class PersonaController extends Controller
      */
     public function destroy(Persona $persona)
     {
+        if (!auth()->user()->canDelete()) {
+            return redirect()->route('personas.index')->with('error', 'No tienes permisos para eliminar registros.');
+        }
+
         try {
             $persona->delete();
             return redirect()->route('personas.index')

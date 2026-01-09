@@ -21,6 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'sexo',
+        'edad',
+        'fecha_nacimiento',
+        'telefono',
+        'direccion'
     ];
 
     /**
@@ -43,6 +49,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => 'string',
+            'fecha_nacimiento' => 'date',
         ];
+    }
+
+    /**
+     * Check if user is an administrator
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user can delete records
+     */
+    public function canDelete(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user can manage other users
+     */
+    public function canManageUsers(): bool
+    {
+        return $this->role === 'admin';
     }
 }

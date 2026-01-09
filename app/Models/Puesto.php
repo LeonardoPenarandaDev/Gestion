@@ -30,6 +30,11 @@ class Puesto extends Model
         return $this->hasMany(Testigo::class, 'fk_id_puesto', 'id');
     }
 
+    public function mesas()
+    {
+        return $this->hasMany(Mesa::class, 'puesto_id', 'id');
+    }
+
     public function infoElectoral()
     {
         return $this->hasMany(InfoElectoral::class, 'id_puesto', 'id');

@@ -360,6 +360,7 @@
                                             </svg>
                                             Editar
                                         </a>
+                                        @if(auth()->user()->canDelete())
                                         <form action="{{ route('personas.destroy', $persona) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
@@ -370,6 +371,7 @@
                                                 Eliminar
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

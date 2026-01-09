@@ -399,6 +399,7 @@
                                             </svg>
                                             
                                         </a>
+                                        @if(auth()->user()->canDelete())
                                         <form action="{{ route('puestos.destroy', $puesto) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('DELETE')
@@ -409,6 +410,7 @@
                                                 
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

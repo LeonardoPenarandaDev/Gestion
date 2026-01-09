@@ -7,6 +7,8 @@ Sistema web desarrollado en Laravel para la gestión y administración de testig
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/LeonardoPenarandaDev/Gestion&envs=APP_KEY,APP_NAME,APP_URL,DB_CONNECTION,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD)
+
 ---
 
 ## 📋 Tabla de Contenidos

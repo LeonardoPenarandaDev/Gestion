@@ -337,17 +337,14 @@
                                 @enderror
                             </div>
 
-                            <!-- Número de Mesas -->
-                            <div class="form-group">
-                                <label for="mesas" class="form-label required">Número de Mesa Asignada</label>
-                                <input type="number" name="mesas" id="mesas" 
-                                       value="{{ old('mesas', $testigo->mesas) }}"
-                                       class="form-input"
-                                       placeholder="1"
-                                       min="1"
-                                       max="99"
-                                       style="text-align: center; font-weight: 600;"
-                                       required>
+                            <!-- Mesas Asignadas (Dinámico) -->
+                            <div class="form-group form-grid-full">
+                                <label for="mesas" class="form-label required">Mesas Asignadas</label>
+                                <div id="mesas-container" style="padding: 1rem; background: rgba(243, 244, 246, 0.5); border-radius: 12px; border: 2px solid #e5e7eb; min-height: 100px;">
+                                    <p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin: 2rem 0;">
+                                        Cargando mesas...
+                                    </p>
+                                </div>
                                 @error('mesas')
                                     <div class="error-message">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -440,29 +437,132 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('documento').focus();
+            // Datos iniciales
+            const puestosPorZona = @json($puestosPorZona ?? []);
+            const currentZona = "{{ old('fk_id_zona', $testigo->fk_id_zona) }}";
+            const currentPuesto = "{{ old('fk_id_puesto', $testigo->fk_id_puesto) }}";
+            // Mesas que pertenecen a este testigo (para marcarlas)
+            const myMesas = @json($testigo->mesas->pluck('numero_mesa')->map(function($m){ return (string)$m; })->toArray());
 
-            const documentoInput = document.getElementById('documento');
-            documentoInput.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '');
-            });
-
-            const nombreInput = document.getElementById('nombre');
-            nombreInput.addEventListener('input', function() {
-                const words = this.value.split(' ');
-                for (let i = 0; i < words.length; i++) {
-                    if (words[i].length > 0) {
-                        words[i] = words[i][0].toUpperCase() + words[i].slice(1).toLowerCase();
-                    }
+            const zonaSelect = document.getElementById('fk_id_zona');
+            const puestoSelect = document.getElementById('fk_id_puesto');
+            // Nota: En edit.blade.php original no vi los selects de 'nombre' y 'direccion' visuales, 
+            // pero si existen en el form (no los vi en el read anterior), los ignoro o agrego si necesario.
+            // Revisando el HTML anterior: Solo hay zona y puesto. No hay los selects visuales extra.
+            // Adaptamos la lógica para usar solo lo que hay.
+            
+            function updatePuestos(zonaId, selectedPuestoId = null) {
+                puestoSelect.innerHTML = '<option value="">Seleccione un puesto</option>';
+                
+                if (zonaId && puestosPorZona[zonaId]) {
+                    puestosPorZona[zonaId].forEach(puesto => {
+                        const mesasOcupadas = parseInt(puesto.mesas_ocupadas) || 0;
+                        const totalMesas = parseInt(puesto.total_mesas) || 0;
+                        const disponibles = totalMesas - mesasOcupadas;
+                        
+                        const option = document.createElement('option');
+                        option.value = puesto.id;
+                        option.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (${disponibles} disp.)`;
+                        option.dataset.info = JSON.stringify(puesto);
+                        
+                        if (selectedPuestoId == puesto.id) {
+                            option.selected = true;
+                        }
+                        
+                        puestoSelect.appendChild(option);
+                    });
                 }
-                this.value = words.join(' ');
+            }
+
+            function updateMesas(puestoId) {
+                const mesasContainer = document.getElementById('mesas-container');
+                const selectedOption = puestoSelect.options[puestoSelect.selectedIndex];
+                
+                if (!selectedOption || !selectedOption.dataset.info) {
+                    mesasContainer.innerHTML = '<p style="text-align:center; color:#6b7280;">Seleccione un puesto</p>';
+                    return;
+                }
+
+                const puesto = JSON.parse(selectedOption.dataset.info);
+                const totalMesas = parseInt(puesto.total_mesas) || 0;
+                // Array de mesas ocupadas por OTROS (ya filtrado en backend)
+                const mesasOcupadasIds = (puesto.mesas_ocupadas_ids || []).map(String); 
+
+                if (totalMesas > 0) {
+                    let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 0.5rem;">';
+                    
+                    for (let i = 1; i <= totalMesas; i++) {
+                        const iStr = String(i);
+                        const isOccupiedByOther = mesasOcupadasIds.includes(iStr);
+                        // Si es mi mesa, debe estar checked. Si es de otro, disabled.
+                        // OJO: Si cambio de puesto, mis mesas antiguas ya no aplican.
+                        // Solo pre-seleccionar si el puesto seleccionado es el original del testigo.
+                        const isMyMesa = (puestoId == currentPuesto) && myMesas.includes(iStr);
+                        
+                        if (isOccupiedByOther) {
+                             html += `
+                                <label style="display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; opacity: 0.6; cursor: not-allowed;">
+                                    <input type="checkbox" disabled style="display:none;">
+                                    <span style="font-weight: bold; color: #9ca3af; font-size: 0.8rem;">${i}</span>
+                                </label>`;
+                        } else {
+                            const checked = isMyMesa ? 'checked' : '';
+                            const bgStyle = isMyMesa ? 'background: #e0e7ff; border-color: #667eea; color: #4338ca;' : 'background: white; border-color: #d1d5db; color: #374151;';
+                            
+                            html += `
+                                <label style="display: flex; flex-direction: column; align-items: center; padding: 0.5rem; border: 1px solid; border-radius: 6px; cursor: pointer; transition: all 0.2s; ${bgStyle}" class="mesa-label">
+                                    <input type="checkbox" name="mesas[]" value="${i}" ${checked} style="display:none;" class="mesa-checkbox">
+                                    <span style="font-weight: bold; font-size: 0.8rem;">${i}</span>
+                                </label>`;
+                        }
+                    }
+                    html += '</div>';
+                    mesasContainer.innerHTML = html;
+                    
+                    // Add listeners for visual feedback
+                    mesasContainer.querySelectorAll('.mesa-checkbox').forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const label = this.parentElement;
+                            if (this.checked) {
+                                label.style.background = '#e0e7ff';
+                                label.style.borderColor = '#667eea';
+                                label.style.color = '#4338ca';
+                            } else {
+                                label.style.background = 'white';
+                                label.style.borderColor = '#d1d5db';
+                                label.style.color = '#374151';
+                            }
+                        });
+                    });
+
+                } else {
+                    mesasContainer.innerHTML = '<p>No hay mesas configuradas para este puesto.</p>';
+                }
+            }
+
+            // Init
+            if (currentZona) {
+                updatePuestos(currentZona, currentPuesto);
+                if (currentPuesto) {
+                    updateMesas(currentPuesto);
+                }
+            }
+
+            // Events
+            zonaSelect.addEventListener('change', function() {
+                updatePuestos(this.value);
+                mesasContainer.innerHTML = '<p style="text-align:center; color:#6b7280;">Seleccione un puesto</p>';
             });
 
-            const mesasInput = document.getElementById('mesas');
-            mesasInput.addEventListener('input', function() {
-                if (this.value < 1) this.value = 1;
-                if (this.value > 99) this.value = 99;
+            puestoSelect.addEventListener('change', function() {
+                updateMesas(this.value);
             });
+            
+            // Documento number only
+            const documentoInput = document.getElementById('documento');
+            if(documentoInput) {
+                documentoInput.addEventListener('input', function() { this.value = this.value.replace(/\D/g, ''); });
+            }
         });
     </script>
 </x-app-layout>

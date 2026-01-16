@@ -187,16 +187,24 @@ class TestigoController extends Controller
             $zonaNumero = (string)$zona->zona;
             
             $puestosPorZona[$zonaNumero] = Puesto::where('zona', $zona->zona)
-                ->select('id', 'puesto', 'nombre', 'direccion', 'total_mesas', 'zona')
+                ->with(['mesas:puesto_id,numero_mesa,testigo_id'])
+                ->withCount('mesas')
                 ->orderBy('puesto')
                 ->get()
-                ->map(function($puesto) {
+                ->map(function($puesto) use ($testigo) {
+                    // Obtener mesas ocupadas por OTROS testigos
+                    $mesasOcupadasPorOtros = $puesto->mesas->filter(function($mesa) use ($testigo) {
+                        return $mesa->testigo_id != $testigo->id;
+                    })->pluck('numero_mesa')->toArray();
+
                     return [
                         'id' => $puesto->id,
                         'puesto' => $puesto->puesto,
                         'nombre' => $puesto->nombre ?? 'Sin nombre',
                         'direccion' => $puesto->direccion ?? 'Sin dirección',
                         'total_mesas' => $puesto->total_mesas ?? 0,
+                        'mesas_ocupadas' => count($mesasOcupadasPorOtros), // Solo cuentan las de otros para "llenado"
+                        'mesas_ocupadas_ids' => $mesasOcupadasPorOtros, // Para deshabilitar en UI
                     ];
                 })
                 ->toArray();

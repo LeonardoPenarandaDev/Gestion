@@ -494,10 +494,8 @@
                     for (let i = 1; i <= totalMesas; i++) {
                         const iStr = String(i);
                         const isOccupiedByOther = mesasOcupadasIds.includes(iStr);
-                        // Si es mi mesa, debe estar checked. Si es de otro, disabled.
-                        // OJO: Si cambio de puesto, mis mesas antiguas ya no aplican.
-                        // Solo pre-seleccionar si el puesto seleccionado es el original del testigo.
-                        const isMyMesa = (puestoId == currentPuesto) && myMesas.includes(iStr);
+                        // Si cambio de puesto, solo debo marcar las mesas si el puesto seleccionado ahora es el mismo que el original
+                        const isMyMesa = (parseInt(puestoId) === parseInt(currentPuesto)) && myMesas.includes(iStr);
                         
                         if (isOccupiedByOther) {
                              html += `

@@ -373,7 +373,7 @@
                                         <option value="">Seleccione una zona</option>
                                         @if(isset($zonas))
                                             @foreach($zonas as $zona)
-                                                <option value="{{ $zona->id }}" {{ old('fk_id_zona', $testigo->fk_id_zona) == $zona->id ? 'selected' : '' }}>
+                                                <option value="{{ $zona->zona }}" {{ (old('fk_id_zona') ?? $zonaActual) == $zona->zona ? 'selected' : '' }}>
                                                     Zona {{ $zona->zona }} - {{ $zona->nombre ?? 'Sin nombre' }}
                                                 </option>
                                             @endforeach
@@ -439,7 +439,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Datos iniciales
             const puestosPorZona = @json($puestosPorZona ?? []);
-            const currentZona = "{{ old('fk_id_zona', $testigo->fk_id_zona) }}";
+            const currentZona = "{{ old('fk_id_zona', $zonaActual) }}";
             const currentPuesto = "{{ old('fk_id_puesto', $testigo->fk_id_puesto) }}";
             // Mesas que pertenecen a este testigo (para marcarlas)
             const myMesas = @json($testigo->mesas->pluck('numero_mesa')->map(function($m){ return (string)$m; })->toArray());

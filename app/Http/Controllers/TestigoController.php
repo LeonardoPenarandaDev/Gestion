@@ -215,10 +215,15 @@ class TestigoController extends Controller
         // Cargar las mesas del testigo actual
         $testigo->load('mesas');
         
+        // Obtener la zona del puesto del testigo
+        $puestoActual = Puesto::find($testigo->fk_id_puesto);
+        $zonaActual = $puestoActual ? $puestoActual->zona : null;
+        
         return view('testigos.edit', [
             'testigo' => $testigo,
             'zonas' => $zonas,
             'puestosPorZona' => $puestosPorZona,
+            'zonaActual' => $zonaActual,
         ]);
     }
 

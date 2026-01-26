@@ -358,6 +358,33 @@
                     <span class="badge badge-yellow">Asignado</span>
                 </div>
 
+                <!-- Total Votos Reportados -->
+                <div class="modern-card" style="padding: 2rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div class="counter" id="counter-votos" style="color: #059669;">{{ $totalVotosReportados ?? 0 }}</div>
+                            <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Total Votos</p>
+                        </div>
+                        <div class="icon-circle icon-green">
+                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <span class="badge badge-green">Reportados</span>
+                </div>
+
+                <!-- Mesas Reportadas -->
+                <div class="modern-card" style="padding: 2rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div class="counter" id="counter-mesas-reportadas">{{ $mesasReportadas ?? 0 }}</div>
+                            <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Mesas Reportadas</p>
+                        </div>
+                    </div>
+                    <span class="badge badge-green">Con E14</span>
+                </div>
+
                 
 
                 <!-- Coordinadores -->
@@ -416,6 +443,72 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Últimos Reportes E14 -->
+                @if(isset($ultimosReportes) && $ultimosReportes->count() > 0)
+                <div class="modern-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin: 0;">Últimos Reportes E14</h3>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin: 0.25rem 0 0 0;">Reportes de mesas recibidos</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px;">
+                            <span style="color: white; font-weight: 600;">{{ $totalReportes ?? 0 }} reportes</span>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f9fafb;">
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Mesa</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Puesto</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Testigo</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Votos</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Foto E14</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($ultimosReportes as $reporte)
+                                <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                    <td style="padding: 1rem;">
+                                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600; font-size: 0.875rem;">
+                                            Mesa #{{ $reporte->mesa->numero_mesa ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; color: #374151;">{{ $reporte->mesa->puesto->nombre ?? 'N/A' }}</td>
+                                    <td style="padding: 1rem; color: #374151;">{{ $reporte->testigo->nombre ?? 'N/A' }}</td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        @if($reporte->total_votos)
+                                            <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600;">
+                                                {{ number_format($reporte->total_votos) }}
+                                            </span>
+                                        @else
+                                            <span style="color: #9ca3af;">-</span>
+                                        @endif
+                                    </td>
+                                    <td style="padding: 1rem; text-align: center;">
+                                        @if($reporte->imagen_acta)
+                                            <a href="{{ Storage::url($reporte->imagen_acta) }}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.25rem; color: #059669; text-decoration: none; font-weight: 500;">
+                                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                                Ver
+                                            </a>
+                                        @else
+                                            <span style="color: #9ca3af;">Sin foto</span>
+                                        @endif
+                                    </td>
+                                    <td style="padding: 1rem; color: #6b7280; font-size: 0.875rem;">
+                                        {{ $reporte->created_at->format('d/m/Y H:i') }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @endif
             </div>
 
             <!-- Enlaces rápidos -->
@@ -557,6 +650,8 @@
             const testigos = parseInt({{ $totalTestigos ?? 0 }});
             const coordinadores = parseInt({{ $totalCoordinadores ?? 0 }});
             const mesasPendientes = parseInt({{ $totalMesasPendientes ?? 0 }});
+            const totalVotos = parseInt({{ $totalVotosReportados ?? 0 }});
+            const mesasReportadas = parseInt({{ $mesasReportadas ?? 0 }});
 
             if (personas > 0) {
                 document.getElementById('counter-personas').textContent = '0';
@@ -591,6 +686,16 @@
             if (coordinadores > 0) {
                 document.getElementById('counter-coordinadores').textContent = '0';
                 setTimeout(() => animateCounter(document.getElementById('counter-coordinadores'), coordinadores), 800);
+            }
+
+            if (totalVotos > 0) {
+                document.getElementById('counter-votos').textContent = '0';
+                setTimeout(() => animateCounter(document.getElementById('counter-votos'), totalVotos), 1000);
+            }
+
+            if (mesasReportadas > 0) {
+                document.getElementById('counter-mesas-reportadas').textContent = '0';
+                setTimeout(() => animateCounter(document.getElementById('counter-mesas-reportadas'), mesasReportadas), 1100);
             }
         });
 

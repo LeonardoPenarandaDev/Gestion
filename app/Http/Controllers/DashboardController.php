@@ -8,6 +8,7 @@ use App\Models\Testigo;
 use App\Models\InfoElectoral;
 use App\Models\InfoTestigo;
 use App\Models\Mesa;
+use App\Models\ResultadoMesa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +40,18 @@ class DashboardController extends Controller
         
         // Mesas pendientes
         $totalMesasPendientes = max(0, $totalMesas - $mesasCubiertas);
+
+        // Estadísticas de reportes de votos
+        $totalReportes = ResultadoMesa::count();
+        $totalVotosReportados = ResultadoMesa::sum('total_votos') ?? 0;
+        $mesasReportadas = ResultadoMesa::distinct('mesa_id')->count('mesa_id');
+        $mesasSinReportar = $mesasCubiertas - $mesasReportadas;
+
+        // Últimos reportes
+        $ultimosReportes = ResultadoMesa::with(['mesa.puesto', 'testigo'])
+            ->latest()
+            ->take(10)
+            ->get();
 
         // Personas por estado
         $personasPorEstado = Persona::selectRaw('estado, COUNT(*) as total')
@@ -77,6 +90,11 @@ class DashboardController extends Controller
             'totalCoordinadores',
             'totalLideres',
             'totalMesasPendientes',
+            'totalReportes',
+            'totalVotosReportados',
+            'mesasReportadas',
+            'mesasSinReportar',
+            'ultimosReportes',
             'personasPorEstado',
             'puestosPorZona',
             'testigosPorZona',

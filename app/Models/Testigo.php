@@ -13,6 +13,7 @@ class Testigo extends Model
     protected $table = 'testigo';
 
     protected $fillable = [
+        'user_id',
         'fk_id_zona',
         'fk_id_puesto',
         'documento',
@@ -23,6 +24,15 @@ class Testigo extends Model
     protected $casts = [
         // Removed 'mesas' cast to prevent conflict with mesas relationship
     ];
+
+    /**
+     * Relación con User
+     * Un testigo puede estar vinculado a un usuario del sistema
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Relación con Puesto
@@ -53,6 +63,15 @@ class Testigo extends Model
     public function mesas()
     {
         return $this->hasMany(Mesa::class, 'testigo_id', 'id');
+    }
+
+    /**
+     * Relación con Resultados de Mesas
+     * Un testigo puede reportar resultados para múltiples mesas
+     */
+    public function resultadosMesas()
+    {
+        return $this->hasMany(ResultadoMesa::class, 'testigo_id', 'id');
     }
 
     /**

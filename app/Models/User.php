@@ -55,11 +55,28 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación con Testigo
+     * Un usuario puede estar vinculado a un testigo electoral
+     */
+    public function testigo()
+    {
+        return $this->hasOne(Testigo::class);
+    }
+
+    /**
      * Check if user is an administrator
      */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is a testigo (electoral witness)
+     */
+    public function isTestigo(): bool
+    {
+        return $this->role === 'testigo';
     }
 
     /**

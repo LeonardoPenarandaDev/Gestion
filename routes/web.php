@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PersonaController;
 use App\Http\Controllers\PuestoController;
 use App\Http\Controllers\TestigoController;
+use App\Http\Controllers\TestigoPortalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,9 +20,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
-    // CRUD Resources
-    // CRUD Resources
+
+    // Portal de Testigos (acceso exclusivo para testigos)
+    Route::middleware([\App\Http\Middleware\EnsureUserIsTestigo::class])->prefix('testigo')->name('testigo.')->group(function () {
+        Route::get('/portal', [TestigoPortalController::class, 'index'])->name('portal');
+        Route::get('/reportar/{mesa}', [TestigoPortalController::class, 'reportar'])->name('reportar');
+        Route::post('/reportar/{mesa}', [TestigoPortalController::class, 'guardarReporte'])->name('guardar-reporte');
+    });
+
+    // CRUD Resources (accesibles para admin y editor)
     Route::resource('personas', PersonaController::class);
     Route::resource('puestos', PuestoController::class);
     Route::resource('testigos', TestigoController::class);

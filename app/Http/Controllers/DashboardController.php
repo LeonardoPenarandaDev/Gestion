@@ -18,6 +18,11 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        // Redirigir testigos a su portal
+        if (auth()->user()->isTestigo()) {
+            return redirect()->route('testigo.portal');
+        }
+
         // Estadísticas generales
         $totalPersonas = Persona::count();
         $totalPuestos = Puesto::count();

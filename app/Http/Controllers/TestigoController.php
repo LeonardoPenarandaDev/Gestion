@@ -5,13 +5,28 @@ namespace App\Http\Controllers;
 use App\Models\Testigo;
 use App\Models\Puesto;
 use App\Models\Mesa;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class TestigoController extends Controller
 {
+    /**
+     * Middleware para bloquear acceso a testigos
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (auth()->user()->isTestigo()) {
+                abort(403, 'No tiene permisos para acceder a esta sección.');
+            }
+            return $next($request);
+        });
+    }
+
     /**
      * Mostrar lista de testigos
      */
@@ -82,7 +97,9 @@ class TestigoController extends Controller
             'nombre' => 'required|string|max:30',
             'mesas' => 'required|array|min:1',
             'mesas.*' => 'required|integer|min:1',
-            'alias' => 'nullable|string|max:20'
+            'alias' => 'nullable|string|max:20',
+            'email' => 'nullable|email|unique:users,email',
+            'password' => 'nullable|min:6|required_with:email',
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
             'fk_id_zona.max' => 'La zona no puede exceder 10 caracteres',
@@ -95,6 +112,10 @@ class TestigoController extends Controller
             'mesas.min' => 'Debe asignar al menos 1 mesa',
             'mesas.*.integer' => 'Los números de mesa deben ser válidos',
             'mesas.*.min' => 'Los números de mesa deben ser mayores a 0',
+            'email.email' => 'El email debe ser válido',
+            'email.unique' => 'Este email ya está registrado',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres',
+            'password.required_with' => 'La contraseña es obligatoria si proporciona un email',
         ]);
 
         // Validación adicional: verificar que las mesas estén dentro del rango del puesto
@@ -123,16 +144,31 @@ class TestigoController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
+            // Crear el usuario si se proporciona email y contraseña
+            $userId = null;
+            if ($request->filled('email') && $request->filled('password')) {
+                $user = User::create([
+                    'name' => $request->nombre,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'role' => 'testigo',
+                    'email_verified_at' => now(),
+                ]);
+                $userId = $user->id;
+                Log::info('Usuario testigo creado', ['user_id' => $user->id, 'email' => $request->email]);
+            }
+
             // Crear el testigo
             $testigo = Testigo::create([
+                'user_id' => $userId,
                 'fk_id_zona' => $request->fk_id_zona,
                 'fk_id_puesto' => $request->fk_id_puesto,
                 'documento' => $request->documento,
                 'nombre' => $request->nombre,
                 'alias' => $request->alias ?? null
             ]);
-            
+
             // Crear las mesas asociadas
             foreach ($request->mesas as $numeroMesa) {
                 Mesa::create([
@@ -141,12 +177,17 @@ class TestigoController extends Controller
                     'numero_mesa' => $numeroMesa,
                 ]);
             }
-            
+
             DB::commit();
             Log::info('Testigo creado exitosamente', ['testigo_id' => $testigo->id]);
 
+            $mensaje = 'Testigo creado exitosamente.';
+            if ($userId) {
+                $mensaje .= ' Se ha creado acceso al portal con el email: ' . $request->email;
+            }
+
             return redirect()->route('testigos.index')
-                            ->with('success', 'Testigo creado exitosamente.');
+                            ->with('success', $mensaje);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al crear testigo', [
@@ -232,6 +273,12 @@ class TestigoController extends Controller
      */
     public function update(Request $request, Testigo $testigo)
     {
+        // Determinar la regla de validación de email según si existe usuario
+        $emailRule = 'nullable|email|unique:users,email';
+        if ($testigo->user_id) {
+            $emailRule = 'nullable|email|unique:users,email,' . $testigo->user_id;
+        }
+
         $validator = Validator::make($request->all(), [
             'fk_id_zona' => 'required|string|max:10',
             'fk_id_puesto' => 'required|exists:puesto,id',
@@ -239,7 +286,9 @@ class TestigoController extends Controller
             'nombre' => 'required|string|max:30',
             'mesas' => 'required|array|min:1',
             'mesas.*' => 'required|integer|min:1',
-            'alias' => 'nullable|string|max:20'
+            'alias' => 'nullable|string|max:20',
+            'email' => $emailRule,
+            'password' => 'nullable|min:6',
         ], [
             'fk_id_zona.required' => 'La zona es obligatoria',
             'fk_id_zona.max' => 'La zona no puede exceder 10 caracteres',
@@ -252,7 +301,17 @@ class TestigoController extends Controller
             'mesas.min' => 'Debe asignar al menos 1 mesa',
             'mesas.*.integer' => 'Los números de mesa deben ser válidos',
             'mesas.*.min' => 'Los números de mesa deben ser mayores a 0',
+            'email.email' => 'El email debe ser válido',
+            'email.unique' => 'Este email ya está registrado',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres',
         ]);
+
+        // Validación adicional: si no tiene usuario y proporciona email, requiere contraseña
+        $validator->after(function ($validator) use ($request, $testigo) {
+            if (!$testigo->user_id && $request->filled('email') && !$request->filled('password')) {
+                $validator->errors()->add('password', 'La contraseña es obligatoria para crear un nuevo usuario.');
+            }
+        });
 
         // Validación adicional: verificar que las mesas estén dentro del rango del puesto
         $validator->after(function ($validator) use ($request) {
@@ -280,7 +339,35 @@ class TestigoController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
+            // Manejar usuario (crear o actualizar)
+            $mensaje = 'Testigo actualizado exitosamente.';
+            if ($request->filled('email')) {
+                if ($testigo->user_id) {
+                    // Actualizar usuario existente
+                    $user = User::find($testigo->user_id);
+                    $user->name = $request->nombre;
+                    $user->email = $request->email;
+                    if ($request->filled('password')) {
+                        $user->password = Hash::make($request->password);
+                        $mensaje .= ' Contraseña actualizada.';
+                    }
+                    $user->save();
+                    $mensaje .= ' Acceso al portal actualizado.';
+                } else {
+                    // Crear nuevo usuario
+                    $user = User::create([
+                        'name' => $request->nombre,
+                        'email' => $request->email,
+                        'password' => Hash::make($request->password),
+                        'role' => 'testigo',
+                        'email_verified_at' => now(),
+                    ]);
+                    $testigo->user_id = $user->id;
+                    $mensaje .= ' Acceso al portal creado con el email: ' . $request->email;
+                }
+            }
+
             // Actualizar datos del testigo
             $testigo->update([
                 'fk_id_zona' => $request->fk_id_zona,
@@ -289,10 +376,10 @@ class TestigoController extends Controller
                 'nombre' => $request->nombre,
                 'alias' => $request->alias ?? null
             ]);
-            
+
             // Sincronizar mesas: eliminar todas las existentes y crear las nuevas
             $testigo->mesas()->delete();
-            
+
             foreach ($request->mesas as $numeroMesa) {
                 Mesa::create([
                     'testigo_id' => $testigo->id,
@@ -300,10 +387,10 @@ class TestigoController extends Controller
                     'numero_mesa' => $numeroMesa,
                 ]);
             }
-            
+
             DB::commit();
             return redirect()->route('testigos.index')
-                            ->with('success', 'Testigo actualizado exitosamente.');
+                            ->with('success', $mensaje);
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

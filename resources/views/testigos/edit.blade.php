@@ -356,6 +356,68 @@
                             </div>
                         </div>
 
+                        <!-- Acceso al Portal -->
+                        <div class="section-divider" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%); border: 1px solid rgba(79, 172, 254, 0.2);">
+                            <div class="section-title" style="color: #1e40af;">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Acceso al Portal
+                            </div>
+                            <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 1rem;">
+                                @if($testigo->user)
+                                    Este testigo tiene acceso al portal con el email: <strong>{{ $testigo->user->email }}</strong>
+                                @else
+                                    Cree credenciales para que el testigo pueda acceder al portal.
+                                @endif
+                            </p>
+
+                            <div class="form-grid">
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" name="email" id="email"
+                                           value="{{ old('email', $testigo->user->email ?? '') }}"
+                                           class="form-input"
+                                           placeholder="correo@ejemplo.com">
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        @if($testigo->user)
+                                            Cambiar el email actualizará el acceso del testigo
+                                        @else
+                                            Proporcione un email para crear acceso al portal
+                                        @endif
+                                    </p>
+                                    @error('email')
+                                        <div class="error-message">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
+                                <!-- Contraseña -->
+                                <div class="form-group">
+                                    <label for="password" class="form-label">
+                                        {{ $testigo->user ? 'Nueva Contraseña (opcional)' : 'Contraseña' }}
+                                    </label>
+                                    <input type="password" name="password" id="password"
+                                           class="form-input"
+                                           placeholder="Mínimo 6 caracteres">
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        @if($testigo->user)
+                                            Dejar vacío para mantener la contraseña actual
+                                        @else
+                                            Requerido si proporciona un email
+                                        @endif
+                                    </p>
+                                    @error('password')
+                                        <div class="error-message">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Asignación Electoral -->
                         <div class="section-divider">
                             <div class="section-title">

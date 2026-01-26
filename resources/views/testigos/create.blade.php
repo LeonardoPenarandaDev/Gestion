@@ -541,6 +541,80 @@
                             </div>
                         </div>
 
+                        <!-- Acceso al Portal (Opcional) -->
+                        <div class="relation-section" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%); border: 1px solid rgba(79, 172, 254, 0.2);">
+                            <div class="relation-title" style="color: #1e40af;">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Acceso al Portal (Opcional)
+                            </div>
+                            <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 1rem;">
+                                Cree credenciales para que el testigo pueda acceder al portal y reportar resultados de sus mesas.
+                            </p>
+
+                            <div class="form-grid">
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email" class="form-label">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Email
+                                    </label>
+                                    <div class="input-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                        </svg>
+                                        <input type="email" name="email" id="email"
+                                               value="{{ old('email') }}"
+                                               class="form-input"
+                                               placeholder="correo@ejemplo.com">
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        Correo personal del testigo para acceder al portal
+                                    </p>
+                                    @error('email')
+                                        <div class="error-message">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
+                                <!-- Contraseña -->
+                                <div class="form-group">
+                                    <label for="password" class="form-label">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                        </svg>
+                                        Contraseña
+                                    </label>
+                                    <div class="input-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                        <input type="password" name="password" id="password"
+                                               class="form-input"
+                                               placeholder="Mínimo 6 caracteres">
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        Si deja vacío, no se creará usuario para este testigo
+                                    </p>
+                                    @error('password')
+                                        <div class="error-message">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Información de Relaciones -->
                         <div class="relation-section">
                             <div class="relation-title">

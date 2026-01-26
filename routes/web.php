@@ -28,9 +28,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/reportar/{mesa}', [TestigoPortalController::class, 'guardarReporte'])->name('guardar-reporte');
     });
 
-    // CRUD Resources (accesibles para admin y editor)
-    Route::resource('personas', PersonaController::class);
-    Route::resource('puestos', PuestoController::class);
+    // CRUD Resources - Solo para administradores
+    Route::middleware('admin_only')->group(function () {
+        Route::resource('personas', PersonaController::class);
+        Route::resource('puestos', PuestoController::class);
+    });
+
+    // Testigos - Accesible para admin y editor
     Route::resource('testigos', TestigoController::class);
 
     // User Management

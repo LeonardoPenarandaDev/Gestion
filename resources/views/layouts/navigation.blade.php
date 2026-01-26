@@ -6,7 +6,7 @@
                 <!-- Logo -->
 
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ Auth::user()->isTestigo() ? route('testigo.portal') : route('dashboard') }}">
+                    <a href="{{ Auth::user()->isTestigo() ? route('testigo.portal') : (Auth::user()->isEditor() ? route('testigos.index') : route('dashboard')) }}">
                         <img src="{{ asset('images/logo.webp') }}"
                             alt="Mi Logo"
                             class="block h-9 w-auto" />
@@ -21,8 +21,13 @@
                         <x-nav-link :href="route('testigo.portal')" :active="request()->routeIs('testigo.*')">
                             {{ __('Mis Mesas') }}
                         </x-nav-link>
+                    @elseif(Auth::user()->isEditor())
+                        <!-- Menú para Editor (solo testigos) -->
+                        <x-nav-link :href="route('testigos.index')" :active="request()->routeIs('testigos.*')">
+                            {{ __('Testigos') }}
+                        </x-nav-link>
                     @else
-                        <!-- Menú para Admin/Editor -->
+                        <!-- Menú para Admin -->
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
@@ -90,8 +95,13 @@
                 <x-responsive-nav-link :href="route('testigo.portal')" :active="request()->routeIs('testigo.*')">
                     {{ __('Mis Mesas') }}
                 </x-responsive-nav-link>
+            @elseif(Auth::user()->isEditor())
+                <!-- Menú móvil para Editor (solo testigos) -->
+                <x-responsive-nav-link :href="route('testigos.index')" :active="request()->routeIs('testigos.*')">
+                    {{ __('Testigos') }}
+                </x-responsive-nav-link>
             @else
-                <!-- Menú móvil para Admin/Editor -->
+                <!-- Menú móvil para Admin -->
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>

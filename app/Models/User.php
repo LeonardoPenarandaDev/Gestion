@@ -80,6 +80,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is an editor
+     */
+    public function isEditor(): bool
+    {
+        return $this->role === 'editor';
+    }
+
+    /**
      * Check if user can delete records
      */
     public function canDelete(): bool

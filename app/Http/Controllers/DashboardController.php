@@ -24,6 +24,11 @@ class DashboardController extends Controller
             return redirect()->route('testigo.portal');
         }
 
+        // Redirigir editores a la lista de testigos
+        if (auth()->user()->isEditor()) {
+            return redirect()->route('testigos.index');
+        }
+
         // Estadísticas generales
         $totalPersonas = Persona::count();
         $totalPuestos = Puesto::count();

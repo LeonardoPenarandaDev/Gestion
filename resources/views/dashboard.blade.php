@@ -385,6 +385,22 @@
                     <span class="badge badge-green">Con E14</span>
                 </div>
 
+                <!-- Mesas Sin Reportar -->
+                <div class="modern-card" style="padding: 2rem; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div class="counter" id="counter-mesas-sin-reportar" style="color: #dc2626;">{{ $mesasSinReportar ?? 0 }}</div>
+                            <p style="color: #6b7280; font-size: 1.1rem; margin: 0.5rem 0 0 0;">Sin Reportar</p>
+                        </div>
+                        <div class="icon-circle" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <span class="badge" style="background: #fee2e2; color: #991b1b;">Pendientes</span>
+                </div>
+
                 
 
                 <!-- Coordinadores -->
@@ -652,6 +668,7 @@
             const mesasPendientes = parseInt({{ $totalMesasPendientes ?? 0 }});
             const totalVotos = parseInt({{ $totalVotosReportados ?? 0 }});
             const mesasReportadas = parseInt({{ $mesasReportadas ?? 0 }});
+            const mesasSinReportar = parseInt({{ $mesasSinReportar ?? 0 }});
 
             if (personas > 0) {
                 document.getElementById('counter-personas').textContent = '0';
@@ -696,6 +713,11 @@
             if (mesasReportadas > 0) {
                 document.getElementById('counter-mesas-reportadas').textContent = '0';
                 setTimeout(() => animateCounter(document.getElementById('counter-mesas-reportadas'), mesasReportadas), 1100);
+            }
+
+            if (mesasSinReportar > 0) {
+                document.getElementById('counter-mesas-sin-reportar').textContent = '0';
+                setTimeout(() => animateCounter(document.getElementById('counter-mesas-sin-reportar'), mesasSinReportar), 1200);
             }
         });
 

@@ -32,7 +32,7 @@ class TestigoController extends Controller
      */
     public function index()
     {
-        $testigos = Testigo::with(['puesto', 'mesas'])
+        $testigos = Testigo::with(['puesto', 'mesas', 'user'])
                           ->paginate(15);
 
         // Calcular contadores para el dashboard
@@ -47,41 +47,58 @@ class TestigoController extends Controller
      */
     public function create()
     {
-        // Obtener todas las zonas únicas (números)
-        $zonas = Puesto::select('zona')
+        // Obtener municipios únicos
+        $municipios = Puesto::select('municipio_codigo', 'municipio_nombre')
             ->distinct()
-            ->orderBy('zona')
+            ->orderBy('municipio_nombre')
             ->get();
-        
-        // Obtener puestos agrupados por zona con información completa
-        $puestosPorZona = [];
-        
-        foreach ($zonas as $zona) {
-            // Usar el número de zona como clave
-            $zonaNumero = (string)$zona->zona;
-            
-            $puestosPorZona[$zonaNumero] = Puesto::where('zona', $zona->zona)
-                ->with(['mesas:puesto_id,numero_mesa']) // Eager load para obtener los números de mesa
-                ->withCount('mesas')
-                ->orderBy('puesto')
-                ->get()
-                ->map(function($puesto) {
-                    return [
-                        'id' => $puesto->id,
-                        'puesto' => $puesto->puesto,
-                        'nombre' => $puesto->nombre ?? 'Sin nombre',
-                        'direccion' => $puesto->direccion ?? 'Sin dirección',
-                        'total_mesas' => $puesto->total_mesas ?? 0,
-                        'mesas_ocupadas' => $puesto->mesas_count ?? 0,
-                        'mesas_ocupadas_ids' => $puesto->mesas->pluck('numero_mesa')->toArray(), // Array de mesas ocupadas
-                    ];
-                })
-                ->toArray();
+
+        // Estructura jerárquica: municipio -> zona -> puestos
+        $puestosPorMunicipioZona = [];
+
+        foreach ($municipios as $municipio) {
+            $munCodigo = $municipio->municipio_codigo;
+            $puestosPorMunicipioZona[$munCodigo] = [
+                'nombre' => $municipio->municipio_nombre,
+                'zonas' => []
+            ];
+
+            // Obtener zonas de este municipio
+            $zonas = Puesto::where('municipio_codigo', $munCodigo)
+                ->select('zona')
+                ->distinct()
+                ->orderBy('zona')
+                ->get();
+
+            foreach ($zonas as $zona) {
+                $zonaNum = $zona->zona;
+
+                $puestos = Puesto::where('municipio_codigo', $munCodigo)
+                    ->where('zona', $zonaNum)
+                    ->with(['mesas:puesto_id,numero_mesa'])
+                    ->withCount('mesas')
+                    ->orderBy('puesto')
+                    ->get()
+                    ->map(function($puesto) {
+                        return [
+                            'id' => $puesto->id,
+                            'puesto' => $puesto->puesto,
+                            'nombre' => $puesto->nombre ?? 'Sin nombre',
+                            'direccion' => $puesto->direccion ?? 'Sin dirección',
+                            'total_mesas' => $puesto->total_mesas ?? 0,
+                            'mesas_ocupadas' => $puesto->mesas_count ?? 0,
+                            'mesas_ocupadas_ids' => $puesto->mesas->pluck('numero_mesa')->toArray(),
+                        ];
+                    })
+                    ->toArray();
+
+                $puestosPorMunicipioZona[$munCodigo]['zonas'][$zonaNum] = $puestos;
+            }
         }
-        
+
         return view('testigos.create', [
-            'zonas' => $zonas,
-            'puestosPorZona' => $puestosPorZona,
+            'municipios' => $municipios,
+            'puestosPorMunicipioZona' => $puestosPorMunicipioZona,
         ]);
     }
 
@@ -206,7 +223,7 @@ class TestigoController extends Controller
      */
     public function show(Testigo $testigo)
     {
-        $testigo->load(['puesto', 'mesas']);
+        $testigo->load(['puesto', 'mesas', 'user']);
         return view('testigos.show', compact('testigo'));
     }
 
@@ -215,55 +232,72 @@ class TestigoController extends Controller
      */
     public function edit(Testigo $testigo)
     {
-        // Obtener todas las zonas únicas
-        $zonas = Puesto::select('zona')
+        // Obtener municipios únicos
+        $municipios = Puesto::select('municipio_codigo', 'municipio_nombre')
             ->distinct()
-            ->orderBy('zona')
+            ->orderBy('municipio_nombre')
             ->get();
-        
-        // Obtener puestos agrupados por zona
-        $puestosPorZona = [];
-        
-        foreach ($zonas as $zona) {
-            $zonaNumero = (string)$zona->zona;
-            
-            $puestosPorZona[$zonaNumero] = Puesto::where('zona', $zona->zona)
-                ->with(['mesas:puesto_id,numero_mesa,testigo_id']) // Eager load para obtener los números de mesa
-                ->withCount('mesas')
-                ->select('id', 'puesto', 'nombre', 'direccion', 'total_mesas', 'zona')
-                ->orderBy('puesto')
-                ->get()
-                ->map(function($puesto) use ($testigo) {
-                    // Filtrar mesas ocupadas por OTROS testigos
-                    $mesasOcupadasPorOtros = $puesto->mesas
-                        ->where('testigo_id', '!=', $testigo->id)
-                        ->pluck('numero_mesa')
-                        ->toArray();
-                    
-                    return [
-                        'id' => $puesto->id,
-                        'puesto' => $puesto->puesto,
-                        'nombre' => $puesto->nombre ?? 'Sin nombre',
-                        'direccion' => $puesto->direccion ?? 'Sin dirección',
-                        'total_mesas' => $puesto->total_mesas ?? 0,
-                        'mesas_ocupadas' => $puesto->mesas_count ?? 0,
-                        'mesas_ocupadas_ids' => $mesasOcupadasPorOtros, // Array de mesas ocupadas por otros
-                    ];
-                })
-                ->toArray();
+
+        // Estructura jerárquica: municipio -> zona -> puestos
+        $puestosPorMunicipioZona = [];
+
+        foreach ($municipios as $municipio) {
+            $munCodigo = $municipio->municipio_codigo;
+            $puestosPorMunicipioZona[$munCodigo] = [
+                'nombre' => $municipio->municipio_nombre,
+                'zonas' => []
+            ];
+
+            $zonas = Puesto::where('municipio_codigo', $munCodigo)
+                ->select('zona')
+                ->distinct()
+                ->orderBy('zona')
+                ->get();
+
+            foreach ($zonas as $zona) {
+                $zonaNum = $zona->zona;
+
+                $puestos = Puesto::where('municipio_codigo', $munCodigo)
+                    ->where('zona', $zonaNum)
+                    ->with(['mesas:puesto_id,numero_mesa,testigo_id'])
+                    ->withCount('mesas')
+                    ->orderBy('puesto')
+                    ->get()
+                    ->map(function($puesto) use ($testigo) {
+                        $mesasOcupadasPorOtros = $puesto->mesas
+                            ->where('testigo_id', '!=', $testigo->id)
+                            ->pluck('numero_mesa')
+                            ->toArray();
+
+                        return [
+                            'id' => $puesto->id,
+                            'puesto' => $puesto->puesto,
+                            'nombre' => $puesto->nombre ?? 'Sin nombre',
+                            'direccion' => $puesto->direccion ?? 'Sin dirección',
+                            'total_mesas' => $puesto->total_mesas ?? 0,
+                            'mesas_ocupadas' => $puesto->mesas_count ?? 0,
+                            'mesas_ocupadas_ids' => $mesasOcupadasPorOtros,
+                        ];
+                    })
+                    ->toArray();
+
+                $puestosPorMunicipioZona[$munCodigo]['zonas'][$zonaNum] = $puestos;
+            }
         }
-        
-        // Cargar las mesas del testigo actual
-        $testigo->load('mesas');
-        
-        // Obtener la zona del puesto del testigo
+
+        // Cargar las mesas y usuario del testigo actual
+        $testigo->load(['mesas', 'user']);
+
+        // Obtener datos actuales del puesto del testigo
         $puestoActual = Puesto::find($testigo->fk_id_puesto);
+        $municipioActual = $puestoActual ? $puestoActual->municipio_codigo : null;
         $zonaActual = $puestoActual ? $puestoActual->zona : null;
-        
+
         return view('testigos.edit', [
             'testigo' => $testigo,
-            'zonas' => $zonas,
-            'puestosPorZona' => $puestosPorZona,
+            'municipios' => $municipios,
+            'puestosPorMunicipioZona' => $puestosPorMunicipioZona,
+            'municipioActual' => $municipioActual,
             'zonaActual' => $zonaActual,
         ]);
     }
@@ -415,6 +449,273 @@ class TestigoController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('testigos.index')
                             ->with('error', 'No se pudo eliminar el testigo. Puede estar relacionado con otros registros.');
+        }
+    }
+
+    /**
+     * Mostrar formulario de importacion CSV
+     */
+    public function importForm()
+    {
+        return view('testigos.import');
+    }
+
+    /**
+     * Descargar plantilla CSV de ejemplo
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="plantilla_testigos.csv"',
+        ];
+
+        $columns = ['documento', 'nombre', 'zona', 'puesto', 'mesas', 'alias', 'email', 'password'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            // BOM para UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            // Header
+            fputcsv($file, $columns, ';');
+            // Ejemplos con zona 01 puesto 01
+            fputcsv($file, ['12345678', 'Juan Perez', '01', '01', '1,2,3', 'juanp', 'juan@email.com', '123456'], ';');
+            fputcsv($file, ['87654321', 'Maria Lopez', '01', '02', '4,5', '', '', ''], ';');
+            fputcsv($file, ['11223344', 'Carlos Garcia', '02', '01', '1', '', '', ''], ';');
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Procesar importacion de CSV
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'archivo_csv' => 'required|file|max:2048',
+            'password_predeterminada' => 'nullable|string|min:6',
+        ], [
+            'archivo_csv.required' => 'Debe seleccionar un archivo CSV',
+            'archivo_csv.max' => 'El archivo no puede exceder 2MB',
+            'password_predeterminada.min' => 'La contraseña predeterminada debe tener al menos 6 caracteres',
+        ]);
+
+        $archivo = $request->file('archivo_csv');
+
+        $resultados = [
+            'exitosos' => 0,
+            'errores' => [],
+            'advertencias' => [],
+        ];
+
+        try {
+            $contenido = file_get_contents($archivo->getRealPath());
+            // Remover BOM si existe
+            $contenido = preg_replace('/^\xEF\xBB\xBF/', '', $contenido);
+
+            // Normalizar saltos de linea
+            $contenido = str_replace(["\r\n", "\r"], "\n", $contenido);
+            $lineas = explode("\n", $contenido);
+            $lineas = array_values(array_filter($lineas, fn($linea) => trim($linea) !== ''));
+
+            Log::info('Importacion CSV iniciada', [
+                'archivo' => $archivo->getClientOriginalName(),
+                'total_lineas' => count($lineas),
+            ]);
+
+            if (count($lineas) < 2) {
+                return redirect()->back()->withErrors(['archivo_csv' => 'El archivo esta vacio o solo tiene encabezados. Lineas encontradas: ' . count($lineas)]);
+            }
+
+            // Detectar separador (punto y coma, coma o tabulador)
+            $primeraLinea = $lineas[0];
+            $separador = ';';
+            if (substr_count($primeraLinea, ',') > substr_count($primeraLinea, ';')) {
+                $separador = ',';
+            } elseif (substr_count($primeraLinea, "\t") > substr_count($primeraLinea, ';')) {
+                $separador = "\t";
+            }
+
+            Log::info('Separador detectado', ['separador' => $separador === "\t" ? 'TAB' : $separador]);
+
+            // Obtener encabezados
+            $encabezados = str_getcsv($lineas[0], $separador);
+            $encabezados = array_map('trim', $encabezados);
+            $encabezados = array_map('strtolower', $encabezados);
+
+            Log::info('Encabezados encontrados', ['encabezados' => $encabezados]);
+
+            // Validar columnas requeridas (puesto en lugar de puesto_id)
+            $columnasRequeridas = ['documento', 'nombre', 'zona', 'puesto', 'mesas'];
+            $columnasFaltantes = array_diff($columnasRequeridas, $encabezados);
+
+            if (!empty($columnasFaltantes)) {
+                return redirect()->back()->withErrors([
+                    'archivo_csv' => 'Faltan columnas requeridas: ' . implode(', ', $columnasFaltantes) . '. Columnas encontradas: ' . implode(', ', $encabezados)
+                ]);
+            }
+
+            DB::beginTransaction();
+
+            // Iterar desde la linea 1 (saltando el encabezado en linea 0)
+            $totalLineas = count($lineas);
+            for ($i = 1; $i < $totalLineas; $i++) {
+                $linea = $lineas[$i];
+                $fila = $i + 1; // +1 para mostrar numero de fila real en el archivo
+
+                try {
+                    $datos = str_getcsv($linea, $separador);
+
+                    // Verificar que tenemos suficientes columnas
+                    if (count($datos) < count($encabezados)) {
+                        $datos = array_pad($datos, count($encabezados), '');
+                    }
+
+                    $registro = array_combine($encabezados, array_slice($datos, 0, count($encabezados)));
+
+                    // Limpiar datos
+                    $registro = array_map('trim', $registro);
+
+                    // Validar datos requeridos
+                    if (empty($registro['documento']) || empty($registro['nombre']) ||
+                        empty($registro['zona']) || empty($registro['puesto']) || empty($registro['mesas'])) {
+                        $resultados['errores'][] = "Fila {$fila}: Campos obligatorios vacios";
+                        continue;
+                    }
+
+                    // Verificar si el documento ya existe
+                    if (Testigo::where('documento', $registro['documento'])->exists()) {
+                        $resultados['advertencias'][] = "Fila {$fila}: Documento {$registro['documento']} ya existe, omitido";
+                        continue;
+                    }
+
+                    // Normalizar zona y puesto (agregar cero inicial si es necesario)
+                    $zonaNum = str_pad($registro['zona'], 2, '0', STR_PAD_LEFT);
+                    $puestoNum = str_pad($registro['puesto'], 2, '0', STR_PAD_LEFT);
+
+                    // Buscar puesto por zona + numero de puesto
+                    $puesto = Puesto::where('zona', $zonaNum)
+                        ->where('puesto', $puestoNum)
+                        ->first();
+
+                    if (!$puesto) {
+                        $resultados['errores'][] = "Fila {$fila}: No existe puesto {$puestoNum} en zona {$zonaNum}";
+                        continue;
+                    }
+
+                    // Parsear mesas (separadas por coma)
+                    $mesas = array_map('trim', explode(',', $registro['mesas']));
+                    $mesas = array_filter($mesas, fn($m) => is_numeric($m) && $m > 0);
+
+                    if (empty($mesas)) {
+                        $resultados['errores'][] = "Fila {$fila}: No hay mesas validas";
+                        continue;
+                    }
+
+                    // Verificar rango de mesas
+                    foreach ($mesas as $numMesa) {
+                        if ($numMesa > $puesto->total_mesas) {
+                            $resultados['errores'][] = "Fila {$fila}: Mesa {$numMesa} excede el total del puesto ({$puesto->total_mesas})";
+                            continue 2;
+                        }
+                        // Verificar si la mesa ya esta asignada
+                        if (Mesa::where('puesto_id', $puesto->id)->where('numero_mesa', $numMesa)->exists()) {
+                            $resultados['advertencias'][] = "Fila {$fila}: Mesa {$numMesa} ya asignada en puesto {$puesto->id}";
+                        }
+                    }
+
+                    // Crear usuario automáticamente
+                    $userId = null;
+                    $email = !empty($registro['email'])
+                        ? $registro['email']
+                        : strtolower(preg_replace('/[^a-zA-Z0-9]/', '.', $registro['nombre'])) . '.' . $registro['documento'] . '@testigo.com';
+                    
+                    // Determinar contraseña: prioridad a password_predeterminada, luego CSV, luego auto-generar
+                    if ($request->filled('password_predeterminada')) {
+                        $password = $request->password_predeterminada;
+                    } elseif (!empty($registro['password'])) {
+                        $password = $registro['password'];
+                    } else {
+                        $password = 'testigo' . $registro['documento'];
+                    }
+
+                    if (User::where('email', $email)->exists()) {
+                        // Si el email ya existe, vincular al usuario existente
+                        $userExistente = User::where('email', $email)->first();
+                        $userId = $userExistente->id;
+                        $resultados['advertencias'][] = "Fila {$fila}: Usuario {$email} ya existía, testigo vinculado";
+                    } else {
+                        $user = User::create([
+                            'name' => $registro['nombre'],
+                            'email' => $email,
+                            'password' => Hash::make($password),
+                            'role' => 'testigo',
+                            'email_verified_at' => now(),
+                        ]);
+                        $userId = $user->id;
+                    }
+
+                    // Crear testigo
+                    $testigo = Testigo::create([
+                        'user_id' => $userId,
+                        'fk_id_zona' => $zonaNum,
+                        'fk_id_puesto' => $puesto->id,
+                        'documento' => $registro['documento'],
+                        'nombre' => $registro['nombre'],
+                        'alias' => $registro['alias'] ?? null,
+                    ]);
+
+                    // Crear mesas
+                    foreach ($mesas as $numMesa) {
+                        // Evitar duplicados
+                        if (!Mesa::where('puesto_id', $puesto->id)->where('numero_mesa', $numMesa)->exists()) {
+                            Mesa::create([
+                                'testigo_id' => $testigo->id,
+                                'puesto_id' => $puesto->id,
+                                'numero_mesa' => $numMesa,
+                            ]);
+                        }
+                    }
+
+                    $resultados['exitosos']++;
+
+                } catch (\Exception $e) {
+                    $resultados['errores'][] = "Fila {$fila}: " . $e->getMessage();
+                }
+            }
+
+            DB::commit();
+
+            Log::info('Importacion CSV completada', [
+                'exitosos' => $resultados['exitosos'],
+                'errores' => count($resultados['errores']),
+                'advertencias' => count($resultados['advertencias']),
+            ]);
+
+            $mensaje = "Importacion completada: {$resultados['exitosos']} testigos creados.";
+            if (!empty($resultados['errores'])) {
+                $mensaje .= " " . count($resultados['errores']) . " errores.";
+            }
+            if (!empty($resultados['advertencias'])) {
+                $mensaje .= " " . count($resultados['advertencias']) . " advertencias.";
+            }
+
+            // Si no hubo exitos pero tampoco errores explicitos, dar mas contexto
+            if ($resultados['exitosos'] === 0 && empty($resultados['errores'])) {
+                $mensaje = "No se importaron testigos. Verifique que el archivo tenga datos despues del encabezado.";
+            }
+
+            return redirect()->route('testigos.index')
+                ->with('success', $mensaje)
+                ->with('import_errores', $resultados['errores'])
+                ->with('import_advertencias', $resultados['advertencias']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error en importacion CSV', ['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['archivo_csv' => 'Error al procesar el archivo: ' . $e->getMessage()]);
         }
     }
 }

@@ -356,6 +356,68 @@
                             </div>
                         </div>
 
+                        <!-- Acceso al Portal -->
+                        <div class="section-divider" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%); border: 1px solid rgba(79, 172, 254, 0.2);">
+                            <div class="section-title" style="color: #1e40af;">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Acceso al Portal
+                            </div>
+                            <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 1rem;">
+                                @if($testigo->user)
+                                    Este testigo tiene acceso al portal con el email: <strong>{{ $testigo->user->email }}</strong>
+                                @else
+                                    Cree credenciales para que el testigo pueda acceder al portal.
+                                @endif
+                            </p>
+
+                            <div class="form-grid">
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" name="email" id="email"
+                                           value="{{ old('email', $testigo->user->email ?? '') }}"
+                                           class="form-input"
+                                           placeholder="correo@ejemplo.com">
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        @if($testigo->user)
+                                            Cambiar el email actualizará el acceso del testigo
+                                        @else
+                                            Proporcione un email para crear acceso al portal
+                                        @endif
+                                    </p>
+                                    @error('email')
+                                        <div class="error-message">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
+                                <!-- Contraseña -->
+                                <div class="form-group">
+                                    <label for="password" class="form-label">
+                                        {{ $testigo->user ? 'Nueva Contraseña (opcional)' : 'Contraseña' }}
+                                    </label>
+                                    <input type="password" name="password" id="password"
+                                           class="form-input"
+                                           placeholder="Mínimo 6 caracteres">
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        @if($testigo->user)
+                                            Dejar vacío para mantener la contraseña actual
+                                        @else
+                                            Requerido si proporciona un email
+                                        @endif
+                                    </p>
+                                    @error('password')
+                                        <div class="error-message">
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Asignación Electoral -->
                         <div class="section-divider">
                             <div class="section-title">
@@ -366,18 +428,29 @@
                             </div>
 
                             <div class="form-grid">
+                                <!-- Municipio -->
+                                <div class="form-group">
+                                    <label for="municipio" class="form-label required">Municipio</label>
+                                    <select name="municipio" id="municipio" class="form-select" required>
+                                        <option value="">Seleccione un municipio</option>
+                                        @if(isset($municipios))
+                                            @foreach($municipios as $municipio)
+                                                <option value="{{ $municipio->municipio_codigo }}" {{ (old('municipio') ?? $municipioActual) == $municipio->municipio_codigo ? 'selected' : '' }}>
+                                                    {{ str_pad($municipio->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $municipio->municipio_nombre }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                    @error('municipio')
+                                        <div class="error-message">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <!-- Zona -->
                                 <div class="form-group">
                                     <label for="fk_id_zona" class="form-label required">Zona Asignada</label>
                                     <select name="fk_id_zona" id="fk_id_zona" class="form-select" required>
-                                        <option value="">Seleccione una zona</option>
-                                        @if(isset($zonas))
-                                            @foreach($zonas as $zona)
-                                                <option value="{{ $zona->id }}" {{ old('fk_id_zona', $testigo->fk_id_zona) == $zona->id ? 'selected' : '' }}>
-                                                    Zona {{ $zona->zona }} - {{ $zona->nombre ?? 'Sin nombre' }}
-                                                </option>
-                                            @endforeach
-                                        @endif
+                                        <option value="">Primero seleccione un municipio</option>
                                     </select>
                                     @error('fk_id_zona')
                                         <div class="error-message">
@@ -394,13 +467,6 @@
                                     <label for="fk_id_puesto" class="form-label required">Puesto Asignado</label>
                                     <select name="fk_id_puesto" id="fk_id_puesto" class="form-select" required>
                                         <option value="">Primero seleccione una zona</option>
-                                        @if(isset($puestos))
-                                            @foreach($puestos as $puesto)
-                                                <option value="{{ $puesto->id }}" {{ old('fk_id_puesto', $testigo->fk_id_puesto) == $puesto->id ? 'selected' : '' }}>
-                                                    {{ $puesto->puesto }} - {{ $puesto->nombre }}
-                                                </option>
-                                            @endforeach
-                                        @endif
                                     </select>
                                     @error('fk_id_puesto')
                                         <div class="error-message">
@@ -437,47 +503,64 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Datos iniciales
-            const puestosPorZona = @json($puestosPorZona ?? []);
-            const currentZona = "{{ old('fk_id_zona', $testigo->fk_id_zona) }}";
+            // Datos jerárquicos: municipio -> zona -> puestos
+            const puestosPorMunicipioZona = @json($puestosPorMunicipioZona ?? []);
+            const currentMunicipio = "{{ old('municipio', $municipioActual) }}";
+            const currentZona = "{{ old('fk_id_zona', $zonaActual) }}";
             const currentPuesto = "{{ old('fk_id_puesto', $testigo->fk_id_puesto) }}";
-            // Mesas que pertenecen a este testigo (para marcarlas)
             const myMesas = @json($testigo->mesas->pluck('numero_mesa')->map(function($m){ return (string)$m; })->toArray());
 
+            const municipioSelect = document.getElementById('municipio');
             const zonaSelect = document.getElementById('fk_id_zona');
             const puestoSelect = document.getElementById('fk_id_puesto');
-            // Nota: En edit.blade.php original no vi los selects de 'nombre' y 'direccion' visuales, 
-            // pero si existen en el form (no los vi en el read anterior), los ignoro o agrego si necesario.
-            // Revisando el HTML anterior: Solo hay zona y puesto. No hay los selects visuales extra.
-            // Adaptamos la lógica para usar solo lo que hay.
-            
-            function updatePuestos(zonaId, selectedPuestoId = null) {
+            const mesasContainer = document.getElementById('mesas-container');
+
+            function updateZonas(munCodigo, selectedZona = null) {
+                zonaSelect.innerHTML = '<option value="">Seleccione una zona</option>';
+                puestoSelect.innerHTML = '<option value="">Primero seleccione una zona</option>';
+                puestoSelect.disabled = true;
+
+                if (munCodigo && puestosPorMunicipioZona[munCodigo]) {
+                    const zonas = Object.keys(puestosPorMunicipioZona[munCodigo].zonas);
+                    zonas.forEach(zona => {
+                        const option = document.createElement('option');
+                        option.value = zona;
+                        option.textContent = `Zona ${zona}`;
+                        if (selectedZona == zona) option.selected = true;
+                        zonaSelect.appendChild(option);
+                    });
+                    zonaSelect.disabled = false;
+                } else {
+                    zonaSelect.disabled = true;
+                }
+            }
+
+            function updatePuestos(munCodigo, zonaId, selectedPuestoId = null) {
                 puestoSelect.innerHTML = '<option value="">Seleccione un puesto</option>';
-                
-                if (zonaId && puestosPorZona[zonaId]) {
-                    puestosPorZona[zonaId].forEach(puesto => {
+
+                if (munCodigo && zonaId && puestosPorMunicipioZona[munCodigo] && puestosPorMunicipioZona[munCodigo].zonas[zonaId]) {
+                    const puestos = puestosPorMunicipioZona[munCodigo].zonas[zonaId];
+                    puestos.forEach(puesto => {
                         const mesasOcupadas = parseInt(puesto.mesas_ocupadas) || 0;
                         const totalMesas = parseInt(puesto.total_mesas) || 0;
                         const disponibles = totalMesas - mesasOcupadas;
-                        
+
                         const option = document.createElement('option');
                         option.value = puesto.id;
                         option.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (${disponibles} disp.)`;
                         option.dataset.info = JSON.stringify(puesto);
-                        
-                        if (selectedPuestoId == puesto.id) {
-                            option.selected = true;
-                        }
-                        
+                        if (selectedPuestoId == puesto.id) option.selected = true;
                         puestoSelect.appendChild(option);
                     });
+                    puestoSelect.disabled = false;
+                } else {
+                    puestoSelect.disabled = true;
                 }
             }
 
             function updateMesas(puestoId) {
-                const mesasContainer = document.getElementById('mesas-container');
                 const selectedOption = puestoSelect.options[puestoSelect.selectedIndex];
-                
+
                 if (!selectedOption || !selectedOption.dataset.info) {
                     mesasContainer.innerHTML = '<p style="text-align:center; color:#6b7280;">Seleccione un puesto</p>';
                     return;
@@ -485,22 +568,18 @@
 
                 const puesto = JSON.parse(selectedOption.dataset.info);
                 const totalMesas = parseInt(puesto.total_mesas) || 0;
-                // Array de mesas ocupadas por OTROS (ya filtrado en backend)
-                const mesasOcupadasIds = (puesto.mesas_ocupadas_ids || []).map(String); 
+                const mesasOcupadasIds = (puesto.mesas_ocupadas_ids || []).map(String);
 
                 if (totalMesas > 0) {
                     let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 0.5rem;">';
-                    
+
                     for (let i = 1; i <= totalMesas; i++) {
                         const iStr = String(i);
                         const isOccupiedByOther = mesasOcupadasIds.includes(iStr);
-                        // Si es mi mesa, debe estar checked. Si es de otro, disabled.
-                        // OJO: Si cambio de puesto, mis mesas antiguas ya no aplican.
-                        // Solo pre-seleccionar si el puesto seleccionado es el original del testigo.
-                        const isMyMesa = (puestoId == currentPuesto) && myMesas.includes(iStr);
-                        
+                        const isMyMesa = (parseInt(puestoId) === parseInt(currentPuesto)) && myMesas.includes(iStr);
+
                         if (isOccupiedByOther) {
-                             html += `
+                            html += `
                                 <label style="display: flex; flex-direction: column; align-items: center; padding: 0.5rem; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; opacity: 0.6; cursor: not-allowed;">
                                     <input type="checkbox" disabled style="display:none;">
                                     <span style="font-weight: bold; color: #9ca3af; font-size: 0.8rem;">${i}</span>
@@ -508,7 +587,6 @@
                         } else {
                             const checked = isMyMesa ? 'checked' : '';
                             const bgStyle = isMyMesa ? 'background: #e0e7ff; border-color: #667eea; color: #4338ca;' : 'background: white; border-color: #d1d5db; color: #374151;';
-                            
                             html += `
                                 <label style="display: flex; flex-direction: column; align-items: center; padding: 0.5rem; border: 1px solid; border-radius: 6px; cursor: pointer; transition: all 0.2s; ${bgStyle}" class="mesa-label">
                                     <input type="checkbox" name="mesas[]" value="${i}" ${checked} style="display:none;" class="mesa-checkbox">
@@ -518,8 +596,7 @@
                     }
                     html += '</div>';
                     mesasContainer.innerHTML = html;
-                    
-                    // Add listeners for visual feedback
+
                     mesasContainer.querySelectorAll('.mesa-checkbox').forEach(cb => {
                         cb.addEventListener('change', function() {
                             const label = this.parentElement;
@@ -534,30 +611,37 @@
                             }
                         });
                     });
-
                 } else {
                     mesasContainer.innerHTML = '<p>No hay mesas configuradas para este puesto.</p>';
                 }
             }
 
-            // Init
-            if (currentZona) {
-                updatePuestos(currentZona, currentPuesto);
-                if (currentPuesto) {
-                    updateMesas(currentPuesto);
+            // Inicializar con valores actuales
+            if (currentMunicipio) {
+                updateZonas(currentMunicipio, currentZona);
+                if (currentZona) {
+                    updatePuestos(currentMunicipio, currentZona, currentPuesto);
+                    if (currentPuesto) {
+                        setTimeout(() => updateMesas(currentPuesto), 100);
+                    }
                 }
             }
 
             // Events
+            municipioSelect.addEventListener('change', function() {
+                updateZonas(this.value);
+                mesasContainer.innerHTML = '<p style="text-align:center; color:#6b7280;">Seleccione un puesto</p>';
+            });
+
             zonaSelect.addEventListener('change', function() {
-                updatePuestos(this.value);
+                updatePuestos(municipioSelect.value, this.value);
                 mesasContainer.innerHTML = '<p style="text-align:center; color:#6b7280;">Seleccione un puesto</p>';
             });
 
             puestoSelect.addEventListener('change', function() {
                 updateMesas(this.value);
             });
-            
+
             // Documento number only
             const documentoInput = document.getElementById('documento');
             if(documentoInput) {

@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'password_texto',
         'role',
         'sexo',
         'edad',
@@ -55,11 +56,36 @@ class User extends Authenticatable
     }
 
     /**
+     * Relación con Testigo
+     * Un usuario puede estar vinculado a un testigo electoral
+     */
+    public function testigo()
+    {
+        return $this->hasOne(Testigo::class);
+    }
+
+    /**
      * Check if user is an administrator
      */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is a testigo (electoral witness)
+     */
+    public function isTestigo(): bool
+    {
+        return $this->role === 'testigo';
+    }
+
+    /**
+     * Check if user is an editor
+     */
+    public function isEditor(): bool
+    {
+        return $this->role === 'editor';
     }
 
     /**

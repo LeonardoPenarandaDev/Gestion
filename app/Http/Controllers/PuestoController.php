@@ -9,14 +9,43 @@ use Illuminate\Support\Facades\Validator;
 class PuestoController extends Controller
 {
     /**
+     * Middleware para bloquear acceso a testigos
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (auth()->user()->isTestigo()) {
+                abort(403, 'No tiene permisos para acceder a esta sección.');
+            }
+            return $next($request);
+        });
+    }
+
+    /**
      * Mostrar lista de puestos
      */
-    public function index()
+    public function index(Request $request)
     {
-        $puestos = Puesto::with(['testigos', 'infoElectoral'])
+        $query = Puesto::with(['testigos', 'infoElectoral'])
+                        ->withCount('mesas');
+
+        if ($buscar = $request->input('buscar')) {
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'LIKE', "%{$buscar}%")
+                  ->orWhere('municipio_nombre', 'LIKE', "%{$buscar}%")
+                  ->orWhere('zona', 'LIKE', "%{$buscar}%")
+                  ->orWhere('puesto', 'LIKE', "%{$buscar}%")
+                  ->orWhere('direccion', 'LIKE', "%{$buscar}%")
+                  ->orWhere('alias', 'LIKE', "%{$buscar}%");
+            });
+        }
+
+        $puestos = $query->orderBy('municipio_nombre')
                         ->orderBy('zona')
                         ->orderBy('puesto')
-                        ->paginate(15);
+                        ->paginate(15)
+                        ->appends($request->only('buscar'));
+
         return view('puestos.index', compact('puestos'));
     }
 
@@ -66,7 +95,7 @@ class PuestoController extends Controller
      */
     public function show(Puesto $puesto)
     {
-        $puesto->load(['testigos', 'infoElectoral', 'infoTestigo']);
+        $puesto->load(['testigos', 'infoElectoral', 'infoTestigo', 'mesas.testigo']);
         return view('puestos.show', compact('puesto'));
     }
 

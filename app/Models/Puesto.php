@@ -12,6 +12,8 @@ class Puesto extends Model
     protected $table = 'puesto';
 
     protected $fillable = [
+        'municipio_codigo',
+        'municipio_nombre',
         'zona',
         'puesto',
         'nombre',
@@ -49,6 +51,12 @@ class Puesto extends Model
     public function scopePorZona($query, $zona)
     {
         return $query->where('zona', $zona);
+    }
+
+    // Scope para filtrar por municipio
+    public function scopePorMunicipio($query, $municipioCodigo)
+    {
+        return $query->where('municipio_codigo', $municipioCodigo);
     }
 
     // Accessor para mostrar información completa del puesto

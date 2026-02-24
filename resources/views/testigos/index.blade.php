@@ -362,14 +362,67 @@
                             <h3 style="font-size: 1.5rem; font-weight: 700; margin: 0; color: #1f2937;">Lista de Testigos</h3>
                             <p style="color: #6b7280; margin: 0.5rem 0 0 0;">Administra y visualiza todos los testigos electorales</p>
                         </div>
-                        <a href="{{ route('testigos.create') }}" class="btn-primary">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Nuevo Testigo
-                        </a>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <a href="{{ route('testigos.import.form') }}" class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                Importar CSV
+                            </a>
+                            <a href="{{ route('testigos.create') }}" class="btn-primary">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Nuevo Testigo
+                            </a>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Mensajes de sesion -->
+                @if(session('success'))
+                <div style="margin: 1rem 2rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border: 1px solid #86efac; border-radius: 12px; color: #166534;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <strong>{{ session('success') }}</strong>
+                    </div>
+                </div>
+                @endif
+
+                @if(session('error'))
+                <div style="margin: 1rem 2rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border: 1px solid #fca5a5; border-radius: 12px; color: #991b1b;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <strong>{{ session('error') }}</strong>
+                    </div>
+                </div>
+                @endif
+
+                @if(session('import_errores') && count(session('import_errores')) > 0)
+                <div style="margin: 0 2rem 1rem; padding: 1rem 1.5rem; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; color: #991b1b;">
+                    <strong style="display: block; margin-bottom: 0.5rem;">Errores de importacion:</strong>
+                    <ul style="margin: 0; padding-left: 1.25rem; max-height: 150px; overflow-y: auto;">
+                        @foreach(session('import_errores') as $error)
+                            <li style="font-size: 0.875rem;">{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+
+                @if(session('import_advertencias') && count(session('import_advertencias')) > 0)
+                <div style="margin: 0 2rem 1rem; padding: 1rem 1.5rem; background: #fef3c7; border: 1px solid #fbbf24; border-radius: 12px; color: #92400e;">
+                    <strong style="display: block; margin-bottom: 0.5rem;">Advertencias:</strong>
+                    <ul style="margin: 0; padding-left: 1.25rem; max-height: 150px; overflow-y: auto;">
+                        @foreach(session('import_advertencias') as $advertencia)
+                            <li style="font-size: 0.875rem;">{{ $advertencia }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
 
                 <!-- Stats Section -->
                 @if(isset($testigos) && $testigos->count() > 0)
@@ -410,6 +463,22 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
                                         Testigo
+                                    </div>
+                                </th>
+                                <th>
+                                    <div style="display: flex; align-items: center;">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Credenciales
+                                    </div>
+                                </th>
+                                <th>
+                                    <div style="display: flex; align-items: center;">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"></path>
+                                        </svg>
+                                        Municipio
                                     </div>
                                 </th>
                                 <th>
@@ -478,6 +547,34 @@
                                     </div>
                                 </td>
                                 <td>
+                                    @if($testigo->user)
+                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <span style="font-size: 0.75rem; color: #1e40af; font-family: monospace; background: #e0f2fe; padding: 0.25rem 0.5rem; border-radius: 4px; display: inline-block;">
+                                            {{ $testigo->user->email }}
+                                        </span>
+                                        <span style="font-size: 0.7rem; color: #6b7280;">
+                                            Pass: <code style="background: #f3f4f6; padding: 0.125rem 0.25rem; border-radius: 2px;">testigo{{ $testigo->documento }}</code>
+                                        </span>
+                                    </div>
+                                    @else
+                                    <span style="color: #dc2626; font-size: 0.75rem; display: flex; align-items: center; gap: 0.25rem;">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                        Sin acceso
+                                    </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">
+                                        @if($testigo->puesto && $testigo->puesto->municipio_codigo)
+                                            {{ str_pad($testigo->puesto->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $testigo->puesto->municipio_nombre }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </span>
+                                </td>
+                                <td>
                                     <span class="zone-badge">
                                          Zona {{ $testigo->fk_id_zona ?? 'N/A' }}
                                     </span>
@@ -541,7 +638,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6">
+                                <td colspan="8">
                                     <div class="empty-state">
                                         <div class="empty-icon">
                                             <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="color: #9ca3af;">

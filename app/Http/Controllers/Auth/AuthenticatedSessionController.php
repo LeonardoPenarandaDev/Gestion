@@ -28,6 +28,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Redirigir según el rol del usuario
+        $user = auth()->user();
+
+        if ($user->isTestigo()) {
+            return redirect()->intended(route('testigo.portal'));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

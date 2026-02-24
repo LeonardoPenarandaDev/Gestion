@@ -293,6 +293,14 @@
             </div>
             <div class="puesto-info">
                 <h3 class="puesto-name">{{ $puesto->puesto ?? 'Sin código' }}</h3>
+                @if($puesto->municipio_codigo)
+                <p style="color: #4f46e5; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline; margin-right: 0.25rem;" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"></path>
+                    </svg>
+                    {{ str_pad($puesto->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $puesto->municipio_nombre }}
+                </p>
+                @endif
                 <p class="puesto-code">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline; margin-right: 0.25rem;" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
@@ -314,11 +322,11 @@
                 </div>
                 <div class="stat-item">
                     <div class="stat-number">{{ $puesto->total_mesas ?? '0' }}</div>
-                    <div class="stat-label">Mesas</div>
+                    <div class="stat-label">Mesas Totales</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">{{ $puesto->alias ? '✓' : '○' }}</div>
-                    <div class="stat-label">Alias</div>
+                    <div class="stat-number">{{ $puesto->mesas->count() ?? '0' }}</div>
+                    <div class="stat-label">Ocupadas</div>
                 </div>
             </div>
             
@@ -355,6 +363,24 @@
                 </div>
                 <div class="card-body">
                     <div class="info-grid">
+                        <div class="info-item" style="grid-column: span 2;">
+                            <div class="info-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"></path>
+                                </svg>
+                                Municipio
+                            </div>
+                            <div class="info-value">
+                                @if($puesto->municipio_codigo)
+                                    <span style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); color: #5b21b6; padding: 0.375rem 0.875rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; border: 1px solid #c4b5fd;">
+                                        {{ str_pad($puesto->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $puesto->municipio_nombre }}
+                                    </span>
+                                @else
+                                    <span class="empty">Sin municipio asignado</span>
+                                @endif
+                            </div>
+                        </div>
+
                         <div class="info-item">
                             <div class="info-label">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -389,19 +415,43 @@
                                 <strong>{{ $puesto->total_mesas ?? '0' }}</strong> mesa{{ ($puesto->total_mesas ?? 0) == 1 ? '' : 's' }}
                             </div>
                         </div>
-
-                        <div class="info-item">
-                            <div class="info-label">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                                </svg>
-                                Alias
-                            </div>
-                            <div class="info-value {{ $puesto->alias ? '' : 'empty' }}">
-                                {{ $puesto->alias ?? 'Sin alias' }}
-                            </div>
-                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Mesas Ocupadas -->
+            <div class="detail-card">
+                <div class="card-header">
+                    <h4 class="card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Mesas Ocupadas
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if($puesto->mesas && $puesto->mesas->count() > 0)
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;">
+                            @foreach($puesto->mesas as $mesa)
+                                <div style="padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fbbf24; border-radius: 12px; text-align: center;">
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: #92400e;">{{ $mesa->numero_mesa }}</div>
+                                    <div style="font-size: 0.75rem; color: #92400e; margin-top: 0.25rem;">Mesa</div>
+                                    @if($mesa->testigo)
+                                        <div style="font-size: 0.7rem; color: #92400e; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(146, 64, 14, 0.2);">
+                                            <strong>{{ $mesa->testigo->nombre ?? 'N/A' }}</strong>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; opacity: 0.5;" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <p>No hay mesas ocupadas en este puesto</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 

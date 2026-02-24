@@ -41,6 +41,15 @@ class Mesa extends Model
     }
 
     /**
+     * Relación con ResultadoMesa
+     * Una mesa puede tener un resultado reportado
+     */
+    public function resultado()
+    {
+        return $this->hasOne(ResultadoMesa::class, 'mesa_id', 'id');
+    }
+
+    /**
      * Scope para filtrar por testigo
      */
     public function scopePorTestigo($query, $testigoId)

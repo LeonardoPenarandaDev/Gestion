@@ -283,6 +283,40 @@
                             Nuevo Puesto
                         </a>
                     </div>
+
+                    {{-- Buscador --}}
+                    <form method="GET" action="{{ route('puestos.index') }}" style="margin-top: 1.25rem;">
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <div style="flex: 1; position: relative;">
+                                <svg width="18" height="18" fill="none" stroke="#9ca3af" viewBox="0 0 24 24" stroke-width="2" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <input type="text" name="buscar" value="{{ request('buscar') }}" placeholder="Buscar por nombre, municipio, zona, puesto o dirección..."
+                                    style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; font-size: 0.9rem; background: white; outline: none; transition: border-color 0.2s; font-family: 'Inter', sans-serif;"
+                                    onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='rgba(0,0,0,0.1)'">
+                            </div>
+                            <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.75rem 1.25rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 0.4rem;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                Buscar
+                            </button>
+                            @if(request('buscar'))
+                            <a href="{{ route('puestos.index') }}" style="background: #f3f4f6; color: #374151; padding: 0.75rem 1.25rem; border-radius: 12px; font-weight: 500; text-decoration: none; transition: all 0.2s; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Limpiar
+                            </a>
+                            @endif
+                        </div>
+                        @if(request('buscar'))
+                        <div style="margin-top: 0.75rem; font-size: 0.85rem; color: #6b7280;">
+                            Mostrando resultados para "<strong style="color: #374151;">{{ request('buscar') }}</strong>"
+                            — {{ $puestos->total() }} {{ $puestos->total() == 1 ? 'resultado' : 'resultados' }}
+                        </div>
+                        @endif
+                    </form>
                 </div>
 
                 <!-- Table Section -->
@@ -290,6 +324,14 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
+                                <th>
+                                    <div style="display: flex; align-items: center;">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"></path>
+                                        </svg>
+                                        Municipio
+                                    </div>
+                                </th>
                                 <th>
                                     <div style="display: flex; align-items: center;">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
@@ -320,7 +362,7 @@
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                                         </svg>
-                                        Total Mesas
+                                        Mesas
                                     </div>
                                 </th>
                                 <th>
@@ -344,6 +386,15 @@
                         <tbody>
                             @forelse($puestos ?? [] as $puesto)
                             <tr>
+                                <td>
+                                    <span style="font-weight: 600; color: #1f2937; font-size: 0.875rem;">
+                                        @if($puesto->municipio_codigo)
+                                            {{ str_pad($puesto->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $puesto->municipio_nombre }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="zone-badge">
                                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
@@ -375,9 +426,21 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="mesa-count">
-                                        {{ $puesto->total_mesas ?? '0' }} mesas
-                                    </span>
+                                    <div style="display: flex; gap: 1rem; align-items: center;">
+                                        <div>
+                                            <div style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">Ocupadas</div>
+                                            <span class="mesa-count" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #92400e; border: 1px solid #fbbf24;">
+                                                {{ $puesto->mesas_count ?? 0 }}
+                                            </span>
+                                        </div>
+                                        <div style="width: 1px; height: 2rem; background: rgba(0,0,0,0.1);"></div>
+                                        <div>
+                                            <div style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">Disponibles</div>
+                                            <span class="mesa-count" style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #166534; border: 1px solid #86efac;">
+                                                {{ (($puesto->total_mesas ?? 0) - ($puesto->mesas_count ?? 0)) }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="status-badge status-active">
@@ -416,7 +479,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6">
+                                <td colspan="7">
                                     <div class="empty-state">
                                         <div class="empty-icon">
                                             <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="color: #9ca3af;">

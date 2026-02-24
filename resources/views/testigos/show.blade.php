@@ -419,9 +419,35 @@
                 </div>
                 <div class="info-value">
                     @if($testigo->mesas && $testigo->mesas->count() > 0)
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                             @foreach($testigo->mesas->sortBy('numero_mesa') as $mesa)
-                                <span class="mesa-count">{{ $mesa->numero_mesa }}</span>
+                                <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:8px;padding:0.5rem 0.75rem;border:1px solid #e2e8f0;">
+                                    <div style="display:flex;align-items:center;gap:0.75rem;">
+                                        <span class="mesa-count">{{ $mesa->numero_mesa }}</span>
+                                        @if($mesa->resultado && $mesa->resultado->bloqueada)
+                                            <span style="font-size:0.75rem;font-weight:600;color:#ea580c;background:#fff7ed;padding:0.2rem 0.5rem;border-radius:6px;border:1px solid #fed7aa;">
+                                                🔒 Bloqueada
+                                            </span>
+                                        @elseif($mesa->resultado)
+                                            <span style="font-size:0.75rem;font-weight:600;color:#16a34a;background:#f0fdf4;padding:0.2rem 0.5rem;border-radius:6px;border:1px solid #bbf7d0;">
+                                                ✓ Reportada
+                                            </span>
+                                        @else
+                                            <span style="font-size:0.75rem;color:#6b7280;background:#f9fafb;padding:0.2rem 0.5rem;border-radius:6px;border:1px solid #e5e7eb;">
+                                                Pendiente
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if($mesa->resultado && $mesa->resultado->bloqueada)
+                                        <form action="{{ route('resultados.desbloquear', $mesa->resultado->id) }}" method="POST" onsubmit="return confirm('¿Desbloquear Mesa #{{ $mesa->numero_mesa }}? El testigo podrá modificar su reporte.')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" style="font-size:0.75rem;font-weight:600;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;padding:0.25rem 0.75rem;border-radius:6px;cursor:pointer;">
+                                                Desbloquear
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
                             @endforeach
                         </div>
                     @else
@@ -459,6 +485,69 @@
         </div>
     </div>
 </div>
+
+            <!-- Credenciales de Acceso -->
+            <div class="detail-card">
+                <div class="card-header" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.15) 0%, rgba(0, 242, 254, 0.15) 100%);">
+                    <h4 class="card-title" style="color: #1e40af;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Credenciales de Acceso al Portal
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if($testigo->user)
+                    <div class="info-grid">
+                        <div class="info-item" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%); border: 1px solid rgba(79, 172, 254, 0.3);">
+                            <div class="info-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                                Email de Acceso
+                            </div>
+                            <div class="info-value" style="color: #1e40af; font-family: monospace;">{{ $testigo->user->email }}</div>
+                        </div>
+
+                        <div class="info-item" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%); border: 1px solid rgba(79, 172, 254, 0.3);">
+                            <div class="info-label">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                </svg>
+                                Contraseña
+                            </div>
+                            @if($testigo->user->password_texto)
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <div class="info-value" id="passField" style="color:#1e40af;font-family:monospace;letter-spacing:0.1em;">
+                                        {{ $testigo->user->password_texto }}
+                                    </div>
+                                    <button onclick="copiarPassword('{{ $testigo->user->password_texto }}')" title="Copiar"
+                                        style="background:#e0f2fe;border:1px solid #7dd3fc;border-radius:6px;padding:0.2rem 0.5rem;cursor:pointer;font-size:0.75rem;color:#0369a1;">
+                                        Copiar
+                                    </button>
+                                </div>
+                            @else
+                                <div class="info-value" style="color:#6b7280;font-style:italic;">No disponible</div>
+                            @endif
+                        </div>
+                    </div>
+                    @else
+                    <div style="text-align: center; padding: 2rem; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5" style="color: #dc2626; margin: 0 auto 1rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <h4 style="color: #991b1b; font-weight: 600; margin: 0 0 0.5rem 0;">Sin Acceso al Portal</h4>
+                        <p style="color: #991b1b; font-size: 0.875rem; margin: 0 0 1rem 0;">Este testigo no tiene credenciales de acceso configuradas.</p>
+                        <a href="{{ route('testigos.edit', $testigo) }}" style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Crear Credenciales
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
 
             <!-- Historial de Registro -->
             <div class="detail-card">
@@ -504,4 +593,12 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function copiarPassword(pass) {
+            navigator.clipboard.writeText(pass).then(() => {
+                alert('Contraseña copiada al portapapeles');
+            });
+        }
+    </script>
 </x-app-layout>

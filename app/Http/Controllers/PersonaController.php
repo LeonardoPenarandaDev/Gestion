@@ -9,6 +9,19 @@ use Illuminate\Support\Facades\Validator;
 class PersonaController extends Controller
 {
     /**
+     * Middleware para bloquear acceso a testigos
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (auth()->user()->isTestigo()) {
+                abort(403, 'No tiene permisos para acceder a esta sección.');
+            }
+            return $next($request);
+        });
+    }
+
+    /**
      * Mostrar lista de personas
      */
     public function index()

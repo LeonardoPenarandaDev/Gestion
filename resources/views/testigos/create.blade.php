@@ -323,35 +323,55 @@
                         
                         <!-- Información Básica -->
                         <div class="form-grid">
+                            <!-- Municipio -->
+                            <div class="form-group">
+                                <label for="municipio" class="form-label required">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M9 8h1m-1 4h1m4-4h1m-1 4h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16"></path>
+                                    </svg>
+                                    Municipio
+                                </label>
+                                <select name="municipio" id="municipio" class="form-select" required>
+                                    <option value="">Seleccione un municipio</option>
+                                    @if(isset($municipios))
+                                        @foreach($municipios as $municipio)
+                                            <option value="{{ $municipio->municipio_codigo }}" {{ old('municipio') == $municipio->municipio_codigo ? 'selected' : '' }}>
+                                                {{ str_pad($municipio->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $municipio->municipio_nombre }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                @error('municipio')
+                                    <div class="error-message">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
                             <!-- FK Zona -->
                             <div class="form-group">
-                            <label for="fk_id_zona" class="form-label required">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                Zona Asignada
-                            </label>
-                            <select name="fk_id_zona" id="fk_id_zona" class="form-select" required>
-                                <option value="">Seleccione una zona</option>
-                                @if(isset($zonas))
-                                    @foreach($zonas as $zona)
-                                        <option value="{{ $zona->zona }}" {{ old('fk_id_zona') == $zona->zona ? 'selected' : '' }}>
-                                            Zona {{ $zona->zona }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            
-                            @error('fk_id_zona')
-                                <div class="error-message">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <label for="fk_id_zona" class="form-label required">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
-                                    {{ $message }}
-                                </div>
-                            @enderror
-                        </div>
+                                    Zona Asignada
+                                </label>
+                                <select name="fk_id_zona" id="fk_id_zona" class="form-select" required disabled>
+                                    <option value="">Primero seleccione un municipio</option>
+                                </select>
+                                @error('fk_id_zona')
+                                    <div class="error-message">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
 
                             <!-- FK Puesto -->
                             <div class="form-group">
@@ -541,6 +561,80 @@
                             </div>
                         </div>
 
+                        <!-- Acceso al Portal (Opcional) -->
+                        <div class="relation-section" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.05) 0%, rgba(0, 242, 254, 0.05) 100%); border: 1px solid rgba(79, 172, 254, 0.2);">
+                            <div class="relation-title" style="color: #1e40af;">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                Acceso al Portal (Opcional)
+                            </div>
+                            <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 1rem;">
+                                Cree credenciales para que el testigo pueda acceder al portal y reportar resultados de sus mesas.
+                            </p>
+
+                            <div class="form-grid">
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email" class="form-label">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Email
+                                    </label>
+                                    <div class="input-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                        </svg>
+                                        <input type="email" name="email" id="email"
+                                               value="{{ old('email') }}"
+                                               class="form-input"
+                                               placeholder="correo@ejemplo.com">
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        Correo personal del testigo para acceder al portal
+                                    </p>
+                                    @error('email')
+                                        <div class="error-message">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+
+                                <!-- Contraseña -->
+                                <div class="form-group">
+                                    <label for="password" class="form-label">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                        </svg>
+                                        Contraseña
+                                    </label>
+                                    <div class="input-icon">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                        </svg>
+                                        <input type="password" name="password" id="password"
+                                               class="form-input"
+                                               placeholder="Mínimo 6 caracteres">
+                                    </div>
+                                    <p style="color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem;">
+                                        Si deja vacío, no se creará usuario para este testigo
+                                    </p>
+                                    @error('password')
+                                        <div class="error-message">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.25rem;" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Información de Relaciones -->
                         <div class="relation-section">
                             <div class="relation-title">
@@ -584,78 +678,116 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
     // Auto-focus en el primer campo
-    document.getElementById('fk_id_zona').focus();
-    
-    // Datos de puestos por zona desde el backend
-    // Estructura: { "Norte": [...], "Sur": [...], "Centro": [...] }
-    const puestosPorZona = @json($puestosPorZona ?? []);
-    console.log('Puestos por zona:', puestosPorZona); // Para debug
-    
+    document.getElementById('municipio').focus();
+
+    // Datos jerárquicos: municipio -> zona -> puestos
+    const puestosPorMunicipioZona = @json($puestosPorMunicipioZona ?? []);
+    console.log('Puestos por municipio y zona:', puestosPorMunicipioZona);
+
+    const municipioSelect = document.getElementById('municipio');
     const zonaSelect = document.getElementById('fk_id_zona');
     const puestoSelect = document.getElementById('fk_id_puesto');
     const nombreSelect = document.getElementById('fk_id_nombre');
     const direccionSelect = document.getElementById('fk_id_direccion');
     const puestoInfo = document.getElementById('puesto-info');
     const puestoDetails = document.getElementById('puesto-details');
-    
+
+    // Función para actualizar zonas según el municipio seleccionado
+    municipioSelect.addEventListener('change', function() {
+        const munCodigo = this.value;
+
+        // Limpiar selectores dependientes
+        zonaSelect.innerHTML = '<option value="">Seleccione una zona</option>';
+        puestoSelect.innerHTML = '<option value="">Primero seleccione una zona</option>';
+        nombreSelect.innerHTML = '<option value="">Seleccione nombre del puesto</option>';
+        direccionSelect.innerHTML = '<option value="">Seleccione dirección</option>';
+        puestoInfo.style.display = 'none';
+        document.getElementById('mesas-container').innerHTML = '<p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin: 2rem 0;">Seleccione un puesto para ver las mesas disponibles</p>';
+
+        if (munCodigo && puestosPorMunicipioZona[munCodigo]) {
+            const zonas = Object.keys(puestosPorMunicipioZona[munCodigo].zonas);
+
+            if (zonas.length > 0) {
+                zonas.forEach(zona => {
+                    const option = document.createElement('option');
+                    option.value = zona;
+                    option.textContent = `Zona ${zona}`;
+                    zonaSelect.appendChild(option);
+                });
+                zonaSelect.disabled = false;
+            } else {
+                zonaSelect.disabled = true;
+            }
+        } else {
+            zonaSelect.disabled = true;
+        }
+
+        puestoSelect.disabled = true;
+        nombreSelect.disabled = true;
+        direccionSelect.disabled = true;
+    });
+
     // Función para actualizar puestos según la zona seleccionada
     zonaSelect.addEventListener('change', function() {
-        const zonaId = this.value; // Aquí zonaId es el nombre de la zona (ej: "Norte")
-        
-        // Limpiar todos los selectores
+        const munCodigo = municipioSelect.value;
+        const zonaId = this.value;
+
+        // Limpiar selectores de puesto
         puestoSelect.innerHTML = '<option value="">Seleccione un puesto</option>';
         nombreSelect.innerHTML = '<option value="">Seleccione nombre del puesto</option>';
         direccionSelect.innerHTML = '<option value="">Seleccione dirección</option>';
         puestoInfo.style.display = 'none';
-        
-        if (zonaId && puestosPorZona[zonaId] && puestosPorZona[zonaId].length > 0) {
-            puestosPorZona[zonaId].forEach(puesto => {
-                // Calcular disponibilidad
-                const mesasOcupadas = parseInt(puesto.mesas_ocupadas) || 0;
-                const totalMesas = parseInt(puesto.total_mesas) || 0;
-                const disponibles = totalMesas - mesasOcupadas;
-                const isFull = mesasOcupadas >= totalMesas;
+        document.getElementById('mesas-container').innerHTML = '<p style="color: #6b7280; font-size: 0.875rem; text-align: center; margin: 2rem 0;">Seleccione un puesto para ver las mesas disponibles</p>';
 
-                // Opción para Puesto Asignado
-                const puestoOption = document.createElement('option');
-                puestoOption.value = puesto.id;
-                
-                if (isFull) {
-                    puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (AGOTADO)`;
-                    puestoOption.disabled = true;
-                    puestoOption.style.color = '#ef4444'; // Rojo para resaltar que está lleno
-                } else {
-                    puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (${disponibles} disp.)`;
-                }
+        if (munCodigo && zonaId && puestosPorMunicipioZona[munCodigo] && puestosPorMunicipioZona[munCodigo].zonas[zonaId]) {
+            const puestos = puestosPorMunicipioZona[munCodigo].zonas[zonaId];
 
-                puestoOption.dataset.info = JSON.stringify(puesto);
-                puestoSelect.appendChild(puestoOption);
-                
-                // Opción para Nombre del Puesto
-                const nombreOption = document.createElement('option');
-                nombreOption.value = puesto.id;
-                nombreOption.textContent = puesto.nombre;
-                nombreOption.dataset.info = JSON.stringify(puesto);
-                nombreSelect.appendChild(nombreOption);
-                
-                // Opción para Dirección del Puesto
-                const direccionOption = document.createElement('option');
-                direccionOption.value = puesto.id;
-                direccionOption.textContent = puesto.direccion;
-                direccionOption.dataset.info = JSON.stringify(puesto);
-                direccionSelect.appendChild(direccionOption);
-            });
-            
-            puestoSelect.disabled = false;
-            nombreSelect.disabled = false;
-            direccionSelect.disabled = false;
+            if (puestos.length > 0) {
+                puestos.forEach(puesto => {
+                    const mesasOcupadas = parseInt(puesto.mesas_ocupadas) || 0;
+                    const totalMesas = parseInt(puesto.total_mesas) || 0;
+                    const disponibles = totalMesas - mesasOcupadas;
+                    const isFull = mesasOcupadas >= totalMesas;
+
+                    const puestoOption = document.createElement('option');
+                    puestoOption.value = puesto.id;
+
+                    if (isFull) {
+                        puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (AGOTADO)`;
+                        puestoOption.disabled = true;
+                        puestoOption.style.color = '#ef4444';
+                    } else {
+                        puestoOption.textContent = `Puesto ${puesto.puesto} - ${puesto.nombre} (${disponibles} disp.)`;
+                    }
+
+                    puestoOption.dataset.info = JSON.stringify(puesto);
+                    puestoSelect.appendChild(puestoOption);
+
+                    const nombreOption = document.createElement('option');
+                    nombreOption.value = puesto.id;
+                    nombreOption.textContent = puesto.nombre;
+                    nombreOption.dataset.info = JSON.stringify(puesto);
+                    nombreSelect.appendChild(nombreOption);
+
+                    const direccionOption = document.createElement('option');
+                    direccionOption.value = puesto.id;
+                    direccionOption.textContent = puesto.direccion;
+                    direccionOption.dataset.info = JSON.stringify(puesto);
+                    direccionSelect.appendChild(direccionOption);
+                });
+
+                puestoSelect.disabled = false;
+                nombreSelect.disabled = false;
+                direccionSelect.disabled = false;
+            } else {
+                puestoSelect.disabled = true;
+                nombreSelect.disabled = true;
+                direccionSelect.disabled = true;
+            }
         } else {
             puestoSelect.disabled = true;
             nombreSelect.disabled = true;
             direccionSelect.disabled = true;
-            if (zonaId) {
-                console.warn('No hay puestos para la zona:', zonaId);
-            }
         }
     });
     

@@ -303,107 +303,10 @@
     <div style="padding: 3rem 0;">
         <div style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
 
-            <!-- Municipios Estratégicos -->
-            @if(isset($municipiosDestacados) && $municipiosDestacados->count() > 0)
-            <div class="fade-in" style="margin-bottom: 2rem;">
-                <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; padding-left: 0.5rem; border-left: 3px solid #667eea; display: flex; align-items: center; gap: 0.5rem;">
-                    <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    Municipios Estratégicos
-                </h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
-                    @foreach($municipiosDestacados as $mun)
-                    @php
-                        $totalVotosMun = $mun->votos_candidato + $mun->votos_competencia;
-                        $pctCandidato = $totalVotosMun > 0 ? round(($mun->votos_candidato / $totalVotosMun) * 100, 1) : 0;
-                        $pctCompetencia = $totalVotosMun > 0 ? round(($mun->votos_competencia / $totalVotosMun) * 100, 1) : 0;
-                        $difVotos = $mun->votos_candidato - $mun->votos_competencia;
-                        $esFavorable = $difVotos >= 0;
-                        $pctCobertura = $mun->total_mesas > 0 ? round(($mun->mesas_reportadas / $mun->total_mesas) * 100) : 0;
-                    @endphp
-                    <div class="modern-card" style="padding: 0; overflow: hidden;">
-                        {{-- Header con color del municipio --}}
-                        <div style="background: linear-gradient(135deg, {{ $mun->color }} 0%, {{ $mun->color }}dd 100%); padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-                            <h4 style="color: white; font-size: 1rem; font-weight: 700; margin: 0;">{{ $mun->nombre }}</h4>
-                            <span style="background: rgba(255,255,255,0.2); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
-                                {{ $mun->total_puestos }} puestos
-                            </span>
-                        </div>
-
-                        <div style="padding: 1.25rem;">
-                            {{-- Votos candidato vs competencia --}}
-                            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; margin-bottom: 1rem;">
-                                <div style="text-align: center; padding: 0.75rem; background: #f0fdf4; border-radius: 10px;">
-                                    <div style="font-size: 1.4rem; font-weight: 700; color: #166534;">{{ number_format($mun->votos_candidato) }}</div>
-                                    <div style="font-size: 0.7rem; color: #16a34a; font-weight: 600;">Candidato</div>
-                                    <div style="font-size: 0.8rem; font-weight: 700; color: #15803d;">{{ $pctCandidato }}%</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 0.75rem; color: #9ca3af;">VS</div>
-                                </div>
-                                <div style="text-align: center; padding: 0.75rem; background: #fef2f2; border-radius: 10px;">
-                                    <div style="font-size: 1.4rem; font-weight: 700; color: #991b1b;">{{ number_format($mun->votos_competencia) }}</div>
-                                    <div style="font-size: 0.7rem; color: #dc2626; font-weight: 600;">Competencia</div>
-                                    <div style="font-size: 0.8rem; font-weight: 700; color: #b91c1c;">{{ $pctCompetencia }}%</div>
-                                </div>
-                            </div>
-
-                            {{-- Barra comparativa --}}
-                            <div style="margin-bottom: 1rem;">
-                                <div style="height: 8px; background: #fee2e2; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); width: {{ $pctCandidato }}%; border-radius: 4px;"></div>
-                                </div>
-                            </div>
-
-                            {{-- Diferencia --}}
-                            <div style="text-align: center; padding: 0.5rem; background: {{ $esFavorable ? '#eff6ff' : '#fefce8' }}; border-radius: 8px; margin-bottom: 1rem;">
-                                <span style="font-size: 1.1rem; font-weight: 700; color: {{ $esFavorable ? '#1e40af' : '#92400e' }};">
-                                    {{ $esFavorable ? '+' : '' }}{{ number_format($difVotos) }}
-                                </span>
-                                <span style="font-size: 0.75rem; color: {{ $esFavorable ? '#3b82f6' : '#d97706' }}; margin-left: 0.25rem;">
-                                    {{ $esFavorable ? 'Ventaja' : 'Desventaja' }}
-                                </span>
-                            </div>
-
-                            {{-- Mini stats --}}
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
-                                <div style="text-align: center; padding: 0.4rem; background: #f9fafb; border-radius: 8px;">
-                                    <div style="font-size: 1rem; font-weight: 700; color: #374151;">{{ $mun->testigos }}</div>
-                                    <div style="font-size: 0.65rem; color: #6b7280;">Testigos</div>
-                                </div>
-                                <div style="text-align: center; padding: 0.4rem; background: #f9fafb; border-radius: 8px;">
-                                    <div style="font-size: 1rem; font-weight: 700; color: #374151;">{{ $mun->mesas_reportadas }}</div>
-                                    <div style="font-size: 0.65rem; color: #6b7280;">Reportadas</div>
-                                </div>
-                                <div style="text-align: center; padding: 0.4rem; background: #f9fafb; border-radius: 8px;">
-                                    <div style="font-size: 1rem; font-weight: 700; color: #374151;">{{ $mun->total_mesas }}</div>
-                                    <div style="font-size: 0.65rem; color: #6b7280;">Total Mesas</div>
-                                </div>
-                            </div>
-
-                            {{-- Barra de cobertura --}}
-                            <div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.75rem;">
-                                    <span style="color: #6b7280;">Cobertura</span>
-                                    <span style="font-weight: 600; color: {{ $mun->color }};">{{ $pctCobertura }}%</span>
-                                </div>
-                                <div style="height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
-                                    <div style="height: 100%; background: {{ $mun->color }}; width: {{ $pctCobertura }}%; border-radius: 3px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
             <!-- Panel de Estadísticas con Gráficos -->
             <div class="fade-in" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
 
-                <!-- Comparativa de Votos: Candidato vs Competencia -->
+                <!-- Comparativa de Votos: Candidato vs Competencia 
                 <div class="modern-card" style="padding: 1.5rem; grid-column: span 2;">
                     <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
@@ -412,7 +315,7 @@
                         Comparativa de Votos
                     </h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <!-- Nuestro Candidato -->
+                         Nuestro Candidato 
                         <div style="text-align: center; padding: 1.25rem; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px; border: 2px solid #86efac;">
                             <div id="totalVotosReportados" style="font-size: 2rem; font-weight: 700; color: #166534;">{{ number_format($totalVotosReportados ?? 0) }}</div>
                             <div style="font-size: 0.85rem; color: #16a34a; font-weight: 600;">Nuestro Candidato</div>
@@ -423,14 +326,14 @@
                             <div style="margin-top: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #15803d;">{{ $porcentajeCandidato }}%</div>
                         </div>
 
-                        <!-- Gráfico Comparativo -->
+                        Gráfico Comparativo 
                         <div style="display: flex; flex-direction: column; justify-content: center; padding: 1rem;">
                             <div style="height: 120px;">
                                 <canvas id="chartComparativoVotos"></canvas>
                             </div>
                         </div>
 
-                        <!-- Competencia -->
+                         Competencia
                         <div style="text-align: center; padding: 1.25rem; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px; border: 2px solid #fca5a5;">
                             <div id="totalVotosCompetencia" style="font-size: 2rem; font-weight: 700; color: #991b1b;">{{ number_format($totalVotosCompetencia ?? 0) }}</div>
                             <div style="font-size: 0.85rem; color: #dc2626; font-weight: 600;">Competencia</div>
@@ -440,7 +343,7 @@
                             <div style="margin-top: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #b91c1c;">{{ $porcentajeCompetencia }}%</div>
                         </div>
 
-                        <!-- Diferencia -->
+                         Diferencia 
                         @php
                             $diferencia = ($totalVotosReportados ?? 0) - ($totalVotosCompetencia ?? 0);
                             $esPositivo = $diferencia >= 0;
@@ -455,7 +358,7 @@
                         </div>
                     </div>
 
-                    <!-- Barra de progreso comparativa -->
+                     Barra de progreso comparativa
                     <div style="margin-top: 1.25rem; padding: 1rem; background: #f9fafb; border-radius: 8px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: 600;">
                             <span style="color: #16a34a;">Candidato: {{ $porcentajeCandidato }}%</span>
@@ -465,7 +368,62 @@
                             <div style="height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); width: {{ $porcentajeCandidato }}%; border-radius: 6px;"></div>
                         </div>
                     </div>
+                </div>-->
+
+                <!-- Ranking de Candidatos -->
+                @if(isset($votosPorCandidato) && $votosPorCandidato->count() > 0)
+                @php
+                    $maxVotosCandidato = $votosPorCandidato->max('total_votos') ?: 1;
+                    $candidatoPropioDash = $votosPorCandidato->firstWhere('tipo', 'propio');
+                    $totalVotosTodos = $votosPorCandidato->sum('total_votos') ?: 1;
+                @endphp
+                <div class="modern-card" style="padding: 1.5rem; grid-column: span 2;">
+                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1.25rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Ranking de Candidatos — Senado
+                        <span style="margin-left: auto; font-size: 0.8rem; font-weight: 400; color: #6b7280;">{{ number_format($totalVotosTodos) }} votos totales</span>
+                    </h3>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 0.6rem;">
+                        @foreach($votosPorCandidato as $i => $cand)
+                        @php
+                            $esPropio = $cand->tipo === 'propio';
+                            $pct = round(($cand->total_votos / $maxVotosCandidato) * 100);
+                            $pctTotal = round(($cand->total_votos / $totalVotosTodos) * 100, 1);
+                            $barColor = $esPropio
+                                ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                                : ($i === 0 ? 'linear-gradient(90deg, #ef4444, #dc2626)' : 'linear-gradient(90deg, #94a3b8, #64748b)');
+                            $bgColor  = $esPropio ? '#f0fdf4' : '#f9fafb';
+                            $borderColor = $esPropio ? '#86efac' : '#e5e7eb';
+                            $nameColor = $esPropio ? '#166534' : '#374151';
+                            $numColor  = $esPropio ? '#15803d' : '#1f2937';
+                        @endphp
+                        <div style="background: {{ $bgColor }}; border: 2px solid {{ $borderColor }}; border-radius: 10px; padding: 0.7rem 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0;">
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: #9ca3af; width: 20px; flex-shrink: 0;">#{{ $loop->iteration }}</span>
+                                    <span style="font-size: 0.875rem; font-weight: {{ $esPropio ? '700' : '600' }}; color: {{ $nameColor }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ $cand->nombre }}
+                                        @if($esPropio)
+                                            <span style="font-size: 0.65rem; background: #dcfce7; color: #166534; padding: 0.1rem 0.4rem; border-radius: 10px; margin-left: 0.25rem; font-weight: 600;">nuestra</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                                    <span style="font-size: 0.75rem; color: #6b7280;">{{ $pctTotal }}%</span>
+                                    <span style="font-size: 1rem; font-weight: 700; color: {{ $numColor }};">{{ number_format($cand->total_votos) }}</span>
+                                </div>
+                            </div>
+                            <div style="height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: {{ $barColor }}; width: {{ $pct }}%; border-radius: 3px; transition: width 0.5s ease;"></div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
+                @endif
 
                 <!-- Resumen Rápido -->
                 <div class="modern-card" style="padding: 1.5rem;">
@@ -687,6 +645,114 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Municipios Estratégicos -->
+            @if(isset($municipiosDestacados) && $municipiosDestacados->count() > 0)
+            <div class="fade-in" style="margin-bottom: 2rem;">
+                <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; padding-left: 0.5rem; border-left: 3px solid #667eea; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Municipios Estratégicos
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+                    @foreach($municipiosDestacados as $mun)
+                    @php
+                        $totalVotosMun = $mun->votos_candidato + $mun->votos_competencia;
+                        $pctCandidato = $totalVotosMun > 0 ? round(($mun->votos_candidato / $totalVotosMun) * 100, 1) : 0;
+                        $pctCompetencia = $totalVotosMun > 0 ? round(($mun->votos_competencia / $totalVotosMun) * 100, 1) : 0;
+                        $difVotos = $mun->votos_candidato - $mun->votos_competencia;
+                        $esFavorable = $difVotos >= 0;
+                        $pctCobertura = $mun->total_mesas > 0 ? round(($mun->mesas_reportadas / $mun->total_mesas) * 100) : 0;
+                        $maxVotosMun = isset($mun->votos_por_candidato) ? collect($mun->votos_por_candidato)->max('total_votos') ?: 1 : 1;
+                    @endphp
+                    <div class="modern-card" style="padding: 0; overflow: hidden;">
+                        {{-- Header con color del municipio --}}
+                        <div style="background: linear-gradient(135deg, {{ $mun->color }} 0%, {{ $mun->color }}dd 100%); padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                            <h4 style="color: white; font-size: 1rem; font-weight: 700; margin: 0;">{{ $mun->nombre }}</h4>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background: rgba(255,255,255,0.2); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                    {{ $mun->total_puestos }} puestos
+                                </span>
+                                <span style="background: rgba(255,255,255,0.2); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                    {{ $pctCobertura }}% cobertura
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style="padding: 1.25rem;">
+                            {{-- Resumen Yirley vs Competencia --}}
+                            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;">
+                                <div style="text-align: center; padding: 0.6rem; background: #f0fdf4; border-radius: 10px;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: #166534;">{{ number_format($mun->votos_candidato) }}</div>
+                                    <div style="font-size: 0.65rem; color: #16a34a; font-weight: 700;">YIRLEY VARGAS</div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #15803d;">{{ $pctCandidato }}%</div>
+                                </div>
+                                <div style="text-align: center; font-size: 0.75rem; color: #9ca3af; font-weight: 700;">VS</div>
+                                <div style="text-align: center; padding: 0.6rem; background: #fef2f2; border-radius: 10px;">
+                                    <div style="font-size: 1.3rem; font-weight: 700; color: #991b1b;">{{ number_format($mun->votos_competencia) }}</div>
+                                    <div style="font-size: 0.65rem; color: #dc2626; font-weight: 700;">COMPETENCIA</div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: #b91c1c;">{{ $pctCompetencia }}%</div>
+                                </div>
+                            </div>
+
+                            {{-- Barra candidato --}}
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="height: 7px; background: #fee2e2; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); width: {{ $pctCandidato }}%; border-radius: 4px;"></div>
+                                </div>
+                            </div>
+
+                            {{-- Diferencia + mini stats --}}
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.4rem; margin-bottom: 1rem;">
+                                <div style="text-align: center; padding: 0.4rem; background: {{ $esFavorable ? '#eff6ff' : '#fefce8' }}; border-radius: 8px; grid-column: span 1;">
+                                    <div style="font-size: 0.9rem; font-weight: 700; color: {{ $esFavorable ? '#1e40af' : '#92400e' }};">{{ $esFavorable ? '+' : '' }}{{ number_format($difVotos) }}</div>
+                                    <div style="font-size: 0.6rem; color: {{ $esFavorable ? '#3b82f6' : '#d97706' }}; font-weight: 600;">{{ $esFavorable ? 'Ventaja' : 'Desventaja' }}</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.4rem; background: #f9fafb; border-radius: 8px;">
+                                    <div style="font-size: 0.9rem; font-weight: 700; color: #374151;">{{ $mun->testigos }}</div>
+                                    <div style="font-size: 0.6rem; color: #6b7280;">Testigos</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.4rem; background: #f9fafb; border-radius: 8px;">
+                                    <div style="font-size: 0.9rem; font-weight: 700; color: #374151;">{{ $mun->mesas_reportadas }}</div>
+                                    <div style="font-size: 0.6rem; color: #6b7280;">Reportadas</div>
+                                </div>
+                                <div style="text-align: center; padding: 0.4rem; background: #f9fafb; border-radius: 8px;">
+                                    <div style="font-size: 0.9rem; font-weight: 700; color: #374151;">{{ $mun->total_mesas }}</div>
+                                    <div style="font-size: 0.6rem; color: #6b7280;">T. Mesas</div>
+                                </div>
+                            </div>
+
+                            {{-- Ranking por candidato --}}
+                            @if(isset($mun->votos_por_candidato) && count($mun->votos_por_candidato) > 0)
+                            <div style="border-top: 1px solid #f3f4f6; padding-top: 0.75rem;">
+                                <p style="font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 0.5rem 0;">Candidatos — Senado</p>
+                                @foreach($mun->votos_por_candidato as $vc)
+                                @php
+                                    $esP = $vc->tipo === 'propio';
+                                    $pctBar = round(($vc->total_votos / $maxVotosMun) * 100);
+                                @endphp
+                                <div style="margin-bottom: 0.3rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.1rem;">
+                                        <span style="font-size: 0.72rem; color: {{ $esP ? '#166534' : '#374151' }}; font-weight: {{ $esP ? '700' : '500' }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 75%;">
+                                            {{ $esP ? '★ ' : '' }}{{ $vc->nombre }}
+                                        </span>
+                                        <span style="font-size: 0.72rem; font-weight: 700; color: {{ $esP ? '#166534' : '#374151' }}; flex-shrink: 0; margin-left: 0.25rem;">{{ number_format($vc->total_votos) }}</span>
+                                    </div>
+                                    <div style="height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden;">
+                                        <div style="height: 100%; width: {{ $pctBar }}%; background: {{ $esP ? 'linear-gradient(90deg,#22c55e,#16a34a)' : 'linear-gradient(90deg,#94a3b8,#64748b)' }}; border-radius: 2px;"></div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
 
             <!-- Sección de Calendario y Tablas -->
             <div class="stats-grid fade-in">

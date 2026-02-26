@@ -307,6 +307,8 @@
                                 <select name="role" id="role" class="form-select" required>
                                     <option value="editor" {{ old('role') == 'editor' ? 'selected' : '' }}>Editor</option>
                                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrador</option>
+                                    <option value="coordinador" {{ old('role') == 'coordinador' ? 'selected' : '' }}>Coordinador</option>
+                                    <option value="testigo" {{ old('role') == 'testigo' ? 'selected' : '' }}>Testigo</option>
                                 </select>
                                 @error('role')
                                     <p class="form-error">{{ $message }}</p>

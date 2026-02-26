@@ -318,9 +318,15 @@
                     </div>
                     <div style="background:white;border-radius:12px;padding:1.25rem;border:1px solid #fed7aa;">
                         <p style="margin:0 0 0.5rem 0;color:#6b7280;font-size:0.875rem;font-weight:600;">DATOS ENVIADOS:</p>
-                        <p style="margin:0.25rem 0;"><strong>Votos nuestro candidato:</strong> {{ $mesa->resultado->total_votos ?? '—' }}</p>
-                        <p style="margin:0.25rem 0;"><strong>Votos competencia:</strong> {{ $mesa->resultado->votos_competencia ?? '—' }}</p>
-                        <p style="margin:0.25rem 0;"><strong>Observación:</strong> {{ $mesa->resultado->observacion }}</p>
+                        @foreach($mesa->resultado->votosCandidatos->sortBy('candidato.orden') as $vc)
+                            <p style="margin:0.2rem 0; font-size:0.875rem;">
+                                <strong>{{ $vc->candidato->nombre }}:</strong> {{ $vc->votos }}
+                                @if($vc->candidato->tipo === 'propio')
+                                    <span style="color:#16a34a;font-size:0.75rem;">(nuestra candidata)</span>
+                                @endif
+                            </p>
+                        @endforeach
+                        <p style="margin:0.5rem 0 0.25rem 0;"><strong>Observación:</strong> {{ $mesa->resultado->observacion }}</p>
                         <p style="margin:0.25rem 0;color:#6b7280;font-size:0.8rem;">Enviado el {{ $mesa->resultado->updated_at->format('d/m/Y H:i') }}</p>
                     </div>
                     <a href="{{ route('testigo.portal') }}" class="btn-secondary" style="margin-top:1.5rem;display:inline-flex;">
@@ -428,51 +434,46 @@
                             Registro de Votos
                         </h4>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                            <!-- Votos Nuestro Candidato -->
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="total_votos" class="form-label" style="color: #166534;">
-                                    <svg style="width: 1rem; height: 1rem; display: inline; margin-right: 0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    Votos Nuestro Candidato
-                                </label>
-                                <input
-                                    type="number"
-                                    id="total_votos"
-                                    name="total_votos"
-                                    class="form-input"
-                                    style="border-color: #86efac; background: white;"
-                                    placeholder="Ej: 350"
-                                    min="0"
-                                    value="{{ old('total_votos', $mesa->resultado->total_votos ?? '') }}"
-                                >
-                                @error('total_votos')
-                                    <p class="error-message">{{ $message }}</p>
-                                @enderror
-                            </div>
+                        {{-- Nuestra candidata --}}
+                        @if($candidatoPropio)
+                        <div style="background: white; border: 2px solid #86efac; border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;">
+                            <label style="display:block; font-weight: 700; color: #166534; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem;">
+                                ✔ Nuestra Candidata — {{ $candidatoPropio->nombre }}
+                            </label>
+                            <input
+                                type="number"
+                                name="votos_candidato[{{ $candidatoPropio->id }}]"
+                                class="form-input"
+                                style="border-color: #86efac;"
+                                placeholder="Votos"
+                                min="0"
+                                value="{{ old('votos_candidato.' . $candidatoPropio->id, $votosPrevios[$candidatoPropio->id] ?? '') }}"
+                            >
+                        </div>
+                        @endif
 
-                            <!-- Votos Competencia -->
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="votos_competencia" class="form-label" style="color: #dc2626;">
-                                    <svg style="width: 1rem; height: 1rem; display: inline; margin-right: 0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                                    </svg>
-                                    Votos Competencia
-                                </label>
-                                <input
-                                    type="number"
-                                    id="votos_competencia"
-                                    name="votos_competencia"
-                                    class="form-input"
-                                    style="border-color: #fca5a5; background: white;"
-                                    placeholder="Ej: 280"
-                                    min="0"
-                                    value="{{ old('votos_competencia', $mesa->resultado->votos_competencia ?? '') }}"
-                                >
-                                @error('votos_competencia')
-                                    <p class="error-message">{{ $message }}</p>
-                                @enderror
+                        {{-- Competencia --}}
+                        <div style="background: white; border: 2px solid #fca5a5; border-radius: 10px; padding: 1rem;">
+                            <p style="font-weight: 700; color: #dc2626; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 0.75rem 0;">
+                                ✗ Competencia — Senado
+                            </p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
+                                @foreach($candidatosCompetencia as $candidato)
+                                <div>
+                                    <label style="display:block; font-size: 0.8rem; font-weight: 600; color: #4a5568; margin-bottom: 0.25rem;">
+                                        {{ $candidato->nombre }}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="votos_candidato[{{ $candidato->id }}]"
+                                        class="form-input"
+                                        style="border-color: #fca5a5; padding: 0.5rem 0.75rem;"
+                                        placeholder="0"
+                                        min="0"
+                                        value="{{ old('votos_candidato.' . $candidato->id, $votosPrevios[$candidato->id] ?? '') }}"
+                                    >
+                                </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>

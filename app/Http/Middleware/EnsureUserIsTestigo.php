@@ -21,11 +21,11 @@ class EnsureUserIsTestigo
 
         $user = auth()->user();
 
-        if (!$user->isTestigo()) {
+        if (!$user->isTestigo() && !$user->isCoordinador()) {
             abort(403, 'No tiene permisos para acceder a esta sección.');
         }
 
-        if (!$user->testigo) {
+        if ($user->isTestigo() && !$user->testigo) {
             abort(403, 'No tiene un registro de testigo asociado. Contacte al administrador.');
         }
 

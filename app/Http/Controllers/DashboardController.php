@@ -9,6 +9,7 @@ use App\Models\InfoElectoral;
 use App\Models\InfoTestigo;
 use App\Models\Mesa;
 use App\Models\ResultadoMesa;
+use App\Models\Candidato;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -19,8 +20,8 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Redirigir testigos a su portal
-        if (auth()->user()->isTestigo()) {
+        // Redirigir testigos y coordinadores a su portal
+        if (auth()->user()->isTestigo() || auth()->user()->isCoordinador()) {
             return redirect()->route('testigo.portal');
         }
 
@@ -72,6 +73,23 @@ class DashboardController extends Controller
             $votosCandidatoMun = (clone $reportesMun)->sum('total_votos') ?? 0;
             $votosCompetenciaMun = (clone $reportesMun)->sum('votos_competencia') ?? 0;
 
+            $resultadoIdsMun = ResultadoMesa::whereIn('mesa_id', $mesaIds)->pluck('id');
+            $votosPorCandidatoMun = DB::table('candidatos')
+                ->leftJoin('votos_candidatos', function ($join) use ($resultadoIdsMun) {
+                    $join->on('candidatos.id', '=', 'votos_candidatos.candidato_id')
+                         ->whereIn('votos_candidatos.resultado_mesa_id', $resultadoIdsMun);
+                })
+                ->where('candidatos.activo', true)
+                ->select(
+                    'candidatos.nombre',
+                    'candidatos.tipo',
+                    'candidatos.orden',
+                    DB::raw('COALESCE(SUM(votos_candidatos.votos), 0) as total_votos')
+                )
+                ->groupBy('candidatos.id', 'candidatos.nombre', 'candidatos.tipo', 'candidatos.orden')
+                ->orderByDesc('total_votos')
+                ->get();
+
             $municipiosDestacados->push((object) [
                 'nombre' => $nombreMunicipio,
                 'color' => $coloresMunicipios[$nombreMunicipio],
@@ -82,6 +100,7 @@ class DashboardController extends Controller
                 'mesas_reportadas' => $mesasReportadasMun,
                 'votos_candidato' => $votosCandidatoMun,
                 'votos_competencia' => $votosCompetenciaMun,
+                'votos_por_candidato' => $votosPorCandidatoMun,
             ]);
         }
 
@@ -91,6 +110,23 @@ class DashboardController extends Controller
         $totalVotosCompetencia = ResultadoMesa::sum('votos_competencia') ?? 0;
         $mesasReportadas = ResultadoMesa::distinct('mesa_id')->count('mesa_id');
         $mesasSinReportar = $mesasCubiertas - $mesasReportadas;
+
+        // Votos por candidato (ranking) — incluye candidatos con 0 votos
+        $votosPorCandidato = DB::table('candidatos')
+            ->leftJoin('votos_candidatos', 'candidatos.id', '=', 'votos_candidatos.candidato_id')
+            ->where('candidatos.activo', true)
+            ->select(
+                'candidatos.id',
+                'candidatos.nombre',
+                'candidatos.tipo',
+                'candidatos.orden',
+                DB::raw('COALESCE(SUM(votos_candidatos.votos), 0) as total_votos'),
+                DB::raw('COUNT(DISTINCT votos_candidatos.resultado_mesa_id) as mesas_reportadas')
+            )
+            ->groupBy('candidatos.id', 'candidatos.nombre', 'candidatos.tipo', 'candidatos.orden')
+            ->orderByDesc('total_votos')
+            ->orderBy('candidatos.orden')
+            ->get();
 
         // Últimos reportes
         $ultimosReportes = ResultadoMesa::with(['mesa.puesto', 'testigo'])
@@ -202,7 +238,8 @@ class DashboardController extends Controller
             'votosPorMunicipio',
             'votosPorPuesto',
             'votosPorMesa',
-            'municipiosDestacados'
+            'municipiosDestacados',
+            'votosPorCandidato'
         ));
     }
 

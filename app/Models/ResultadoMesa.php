@@ -34,4 +34,9 @@ class ResultadoMesa extends Model
     {
         return $this->belongsTo(Testigo::class);
     }
+
+    public function votosCandidatos()
+    {
+        return $this->hasMany(VotoCandidato::class);
+    }
 }

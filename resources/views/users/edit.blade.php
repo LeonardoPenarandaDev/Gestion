@@ -324,6 +324,33 @@
                         </div>
                     </div>
 
+                    <!-- Sección: Rol -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <div class="icon-circle" style="width: 36px; height: 36px;">
+                                <svg width="18" height="18" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            Rol y Permisos
+                        </h3>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="role" class="form-label">Rol del Usuario *</label>
+                                <select name="role" id="role" class="form-select" required>
+                                    <option value="editor" {{ old('role', $user->role) == 'editor' ? 'selected' : '' }}>Editor</option>
+                                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrador</option>
+                                    <option value="coordinador" {{ old('role', $user->role) == 'coordinador' ? 'selected' : '' }}>Coordinador</option>
+                                    <option value="testigo" {{ old('role', $user->role) == 'testigo' ? 'selected' : '' }}>Testigo</option>
+                                </select>
+                                @error('role')
+                                    <p class="form-error">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Sección: Cambiar Contraseña -->
                     <div class="form-section">
                         <h3 class="form-section-title">

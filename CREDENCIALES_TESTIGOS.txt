@@ -1,0 +1,57 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║              CREDENCIALES DE ACCESO - PORTAL DE TESTIGOS                ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+URL del Portal: http://localhost/testigo/portal
+Fecha de creación: 2026-01-23
+
+─────────────────────────────────────────────────────────────────────────────
+
+TESTIGO #1: Jesus Britto Toncel
+└─ Documento: 60264937
+└─ Email: jesus.britto.toncel@testigo.com
+└─ Contraseña: testigo60264937
+
+─────────────────────────────────────────────────────────────────────────────
+
+TESTIGO #2: Carpeta 3. Gestion Del Pmi
+└─ Documento: 1090449237
+└─ Email: carpeta.3..gestion.del.pmi@testigo.com
+└─ Contraseña: testigo1090449237
+
+─────────────────────────────────────────────────────────────────────────────
+
+TESTIGO #3: Karina Marcela Peñaranda
+└─ Documento: 1004797100
+└─ Email: karina.marcela.pearanda@testigo.com
+└─ Contraseña: testigo1004797100
+
+─────────────────────────────────────────────────────────────────────────────
+
+TESTIGO #4: Leonardo Peñaranda
+└─ Documento: 1093793913
+└─ Email: leonardo.pearanda@testigo.com
+└─ Contraseña: testigo1093793913
+
+─────────────────────────────────────────────────────────────────────────────
+
+TESTIGO #5: Yeison Carrillo
+└─ Documento: 63569784
+└─ Email: yeison.carrillo@testigo.com
+└─ Contraseña: testigo63569784
+
+─────────────────────────────────────────────────────────────────────────────
+
+INSTRUCCIONES DE USO:
+1. Cada testigo debe acceder con su email y contraseña
+2. Verán sus mesas asignadas en el dashboard
+3. Pueden subir fotos del acta electoral (máx 5MB)
+4. Deben escribir observaciones sobre los votos
+5. Pueden actualizar los reportes cuando quieran
+
+NOTAS DE SEGURIDAD:
+- Se recomienda cambiar las contraseñas después del primer acceso
+- Las contraseñas siguen el patrón: testigo + número de documento
+- Todos los usuarios tienen rol "testigo" con acceso limitado
+
+═════════════════════════════════════════════════════════════════════════════

@@ -89,6 +89,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is a coordinador (can report any mesa on behalf of testigos)
+     */
+    public function isCoordinador(): bool
+    {
+        return $this->role === 'coordinador';
+    }
+
+    /**
      * Check if user can delete records
      */
     public function canDelete(): bool

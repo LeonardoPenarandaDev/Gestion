@@ -1,1499 +1,327 @@
 <x-app-layout>
     <x-slot name="header">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-            <div style="padding: 2rem; text-align: center;">
-                <h2 style="color: white; font-size: 2rem; font-weight: bold; margin: 0;">
-                    {{ __('Dashboard Electoral') }}
-                </h2>
-                <p style="color: rgba(255,255,255,0.8); margin-top: 0.5rem; font-size: 0.9rem;">
-                    Panel de Control Administrativo
-                </p>
-            </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+            <h2 style="font-size:1.05rem;font-weight:700;color:#1f2937;margin:0;display:flex;align-items:center;gap:0.6rem;">
+                <svg width="18" height="18" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+                </svg>
+                Dashboard Electoral
+                <span style="color:#d1d5db;">·</span>
+                <span style="font-weight:500;color:#6b7280;font-size:0.9rem;">{{ now()->locale('es')->isoFormat('D MMM YYYY') }}</span>
+            </h2>
+            <span style="display:inline-flex;align-items:center;gap:0.35rem;background:#dcfce7;color:#16a34a;font-size:0.72rem;font-weight:700;padding:0.25rem 0.75rem;border-radius:20px;letter-spacing:0.3px;">
+                <span style="width:6px;height:6px;background:#16a34a;border-radius:50%;display:inline-block;animation:dash-pulse 2s infinite;"></span>
+                EN VIVO
+            </span>
         </div>
     </x-slot>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif !important;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-            min-height: 100vh;
+        body { font-family:'Inter',sans-serif !important; background:#f1f5f9 !important; }
+
+        @keyframes dash-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        .d-card {
+            background:white;
+            border-radius:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.07);
+            transition:transform 0.18s,box-shadow 0.18s;
         }
-        
-        .modern-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 100%);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .modern-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        
-        .counter {
-            font-variant-numeric: tabular-nums;
-            font-weight: bold;
-            font-size: 2.5rem;
-            color: #1f2937;
-        }
-        
-        .btn-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            text-align: center;
-            width: 100%;
-            margin-bottom: 0.75rem;
-        }
-        
-        .btn-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-            color: white;
-            text-decoration: none;
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.8);
-            color: #374151;
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.95);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            color: #374151;
-            text-decoration: none;
-        }
-        
-        .icon-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .icon-blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
-        .icon-green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .icon-yellow { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .icon-purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
-        
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-block;
-            margin-top: 1rem;
-        }
-        
-        .badge-green { background: #dcfce7; color: #166534; }
-        .badge-blue { background: #dbeafe; color: #1e40af; }
-        .badge-yellow { background: #fef3c7; color: #92400e; }
-        .badge-purple { background: #f3e8ff; color: #7c2d12; }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-        
-        .management-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+        .d-card-hover:hover {
+            transform:translateY(-2px);
+            box-shadow:0 6px 18px rgba(0,0,0,0.1);
         }
 
-        .management-card {
-            padding: 1.25rem !important;
-        }
+        .prog-track { background:#f3f4f6; border-radius:4px; height:6px; overflow:hidden; }
+        .prog-fill  { height:100%; border-radius:4px; }
 
-        .management-card .icon-circle {
-            width: 40px !important;
-            height: 40px !important;
-        }
+        .report-row { display:flex; align-items:center; gap:0.75rem; padding:0.55rem 0; border-bottom:1px solid #f3f4f6; }
+        .report-row:last-child { border-bottom:none; }
 
-        .management-card h3 {
-            font-size: 1rem !important;
+        .q-link {
+            display:flex; align-items:center; gap:0.7rem;
+            padding:0.6rem 0.75rem; border-radius:9px;
+            text-decoration:none; color:#374151;
+            font-size:0.84rem; font-weight:600;
+            transition:background 0.13s;
         }
+        .q-link:hover { background:#f3f4f6; color:#1f2937; }
 
-        .management-card .btn-gradient,
-        .management-card .btn-secondary {
-            padding: 0.6rem 1rem;
-            font-size: 0.85rem;
+        @media(max-width:900px) {
+            .dash-cols { grid-template-columns:1fr !important; }
+            .stats-bar  { grid-template-columns:repeat(2,1fr) !important; }
         }
-        
-        .fade-in {
-            animation: fadeIn 0.8s ease-out;
-        }
-        
-        /* Calendar Styles */
-        .calendar-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            overflow: hidden;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .calendar-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .calendar-month {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .calendar-nav button {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .calendar-nav button:hover {
-            background: rgba(255,255,255,0.4);
-        }
-
-        .calendar-grid {
-            padding: 1.5rem;
-        }
-
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            color: #6b7280;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0.5rem;
-        }
-
-        .day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-            color: #374151;
-        }
-
-        .day:hover:not(.empty) {
-            background: #f3f4f6;
-        }
-
-        .day.today {
-            background: #ebf5ff;
-            color: #2563eb;
-            font-weight: bold;
-        }
-
-        .day.event {
-            background: #764ba2;
-            color: white;
-            box-shadow: 0 4px 6px rgba(118, 75, 162, 0.3);
-        }
-        
-        .day.event-congress {
-             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-
-        .event-list {
-            padding: 0 1.5rem 1.5rem;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .event-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f3f4f6;
-        }
-
-        .event-item:last-child {
-            border-bottom: none;
-        }
-
-        .event-date {
-            font-weight: 700;
-            color: #4b5563;
-            width: 50px;
-            text-align: center;
-            line-height: 1.2;
-        }
-        
-        .event-date span {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 400;
-        }
-
-        .event-info {
-            margin-left: 1rem;
-        }
-
-        .event-title {
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .event-desc {
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @media(max-width:540px) {
+            .hero-grid  { grid-template-columns:1fr !important; }
+            .stats-bar  { grid-template-columns:repeat(2,1fr) !important; }
         }
     </style>
 
-    <div style="padding: 3rem 0;">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
+    <div style="padding:1.5rem 0;">
+    <div style="max-width:1400px;margin:0 auto;padding:0 1.25rem;">
 
-            <!-- Panel de Estadísticas con Gráficos -->
-            <div class="fade-in" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-
-                <!-- Comparativa de Votos: Candidato vs Competencia 
-                <div class="modern-card" style="padding: 1.5rem; grid-column: span 2;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        Comparativa de Votos
-                    </h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                         Nuestro Candidato 
-                        <div style="text-align: center; padding: 1.25rem; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px; border: 2px solid #86efac;">
-                            <div id="totalVotosReportados" style="font-size: 2rem; font-weight: 700; color: #166534;">{{ number_format($totalVotosReportados ?? 0) }}</div>
-                            <div style="font-size: 0.85rem; color: #16a34a; font-weight: 600;">Nuestro Candidato</div>
-                            @php
-                                $totalVotos = ($totalVotosReportados ?? 0) + ($totalVotosCompetencia ?? 0);
-                                $porcentajeCandidato = $totalVotos > 0 ? round(($totalVotosReportados / $totalVotos) * 100, 1) : 0;
-                            @endphp
-                            <div style="margin-top: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #15803d;">{{ $porcentajeCandidato }}%</div>
-                        </div>
-
-                        Gráfico Comparativo 
-                        <div style="display: flex; flex-direction: column; justify-content: center; padding: 1rem;">
-                            <div style="height: 120px;">
-                                <canvas id="chartComparativoVotos"></canvas>
-                            </div>
-                        </div>
-
-                         Competencia
-                        <div style="text-align: center; padding: 1.25rem; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px; border: 2px solid #fca5a5;">
-                            <div id="totalVotosCompetencia" style="font-size: 2rem; font-weight: 700; color: #991b1b;">{{ number_format($totalVotosCompetencia ?? 0) }}</div>
-                            <div style="font-size: 0.85rem; color: #dc2626; font-weight: 600;">Competencia</div>
-                            @php
-                                $porcentajeCompetencia = $totalVotos > 0 ? round(($totalVotosCompetencia / $totalVotos) * 100, 1) : 0;
-                            @endphp
-                            <div style="margin-top: 0.5rem; font-size: 1.1rem; font-weight: 700; color: #b91c1c;">{{ $porcentajeCompetencia }}%</div>
-                        </div>
-
-                         Diferencia 
-                        @php
-                            $diferencia = ($totalVotosReportados ?? 0) - ($totalVotosCompetencia ?? 0);
-                            $esPositivo = $diferencia >= 0;
-                        @endphp
-                        <div style="text-align: center; padding: 1.25rem; background: {{ $esPositivo ? 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)' : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' }}; border-radius: 12px;">
-                            <div style="font-size: 2rem; font-weight: 700; color: {{ $esPositivo ? '#1e40af' : '#92400e' }};">
-                                {{ $esPositivo ? '+' : '' }}{{ number_format($diferencia) }}
-                            </div>
-                            <div style="font-size: 0.85rem; color: {{ $esPositivo ? '#3b82f6' : '#d97706' }}; font-weight: 600;">
-                                {{ $esPositivo ? 'Ventaja' : 'Desventaja' }}
-                            </div>
-                        </div>
+        {{-- ═══════════════════════════════════════
+             HERO: Franja por Elección
+        ═══════════════════════════════════════ --}}
+        <div class="hero-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem;margin-bottom:1.1rem;">
+            @foreach($elecciones as $elec)
+            @php
+                $ventaja = $elec->votos_propio - $elec->votos_competencia;
+                $pctMesas = $mesasCubiertas > 0 ? round($mesasReportadas / $mesasCubiertas * 100) : 0;
+                $elecColor = $elec->color ?? '#667eea';
+            @endphp
+            <div class="d-card d-card-hover" style="padding:1.25rem 1.4rem;border-top:4px solid {{ $elecColor }};">
+                {{-- Encabezado elección --}}
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+                    <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:#9ca3af;letter-spacing:0.5px;">
+                        {{ $elec->nombre }}
                     </div>
-
-                     Barra de progreso comparativa
-                    <div style="margin-top: 1.25rem; padding: 1rem; background: #f9fafb; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: 600;">
-                            <span style="color: #16a34a;">Candidato: {{ $porcentajeCandidato }}%</span>
-                            <span style="color: #dc2626;">Competencia: {{ $porcentajeCompetencia }}%</span>
-                        </div>
-                        <div style="height: 12px; background: #fee2e2; border-radius: 6px; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); width: {{ $porcentajeCandidato }}%; border-radius: 6px;"></div>
-                        </div>
-                    </div>
-                </div>-->
-
-                {{-- ── Panel de Elecciones ── --}}
-                @if(isset($elecciones) && $elecciones->count() > 0)
-                <div class="modern-card" style="padding: 1.5rem; grid-column: span 2;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1.25rem 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                        <span style="display:flex;align-items:center;gap:0.5rem;">
-                            <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            Elecciones Configuradas
-                        </span>
-                        <a href="{{ route('elecciones.index') }}" style="font-size:0.78rem;font-weight:600;color:#667eea;text-decoration:none;background:#f3f0ff;padding:0.3rem 0.8rem;border-radius:20px;">
-                            Gestionar →
-                        </a>
-                    </h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
-                        @foreach($elecciones as $elec)
-                        @php
-                            $elecTot  = $elec->votos_propio + $elec->votos_competencia;
-                            $elecPct  = $elecTot > 0 ? round($elec->votos_propio / $elecTot * 100, 1) : 0;
-                            $elecDif  = $elec->votos_propio - $elec->votos_competencia;
-                        @endphp
-                        <div style="border: 2px solid {{ $elec->activa ? $elec->color : '#e5e7eb' }}30; border-radius: 14px; overflow: hidden; opacity: {{ $elec->activa ? '1' : '0.65' }};">
-                            <div style="background: {{ $elec->color }}; padding: 0.85rem 1rem; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="color:white; font-weight:800; font-size:0.9rem;">{{ $elec->nombre }}</div>
-                                    <div style="color:rgba(255,255,255,0.8); font-size:0.72rem; margin-top:0.1rem;">
-                                        {{ ucfirst($elec->tipo_cargo) }}
-                                        @if($elec->fecha) · {{ $elec->fecha->format('d/m/Y') }} @endif
-                                    </div>
-                                </div>
-                                <span style="background:rgba(255,255,255,{{ $elec->activa ? '0.25' : '0.1' }});color:white;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.65rem;font-weight:700;">
-                                    {{ $elec->activa ? '● Activa' : '○ Inactiva' }}
-                                </span>
-                            </div>
-                            <div style="padding: 0.85rem 1rem; background:white;">
-                                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:0.5rem; text-align:center; margin-bottom:0.75rem;">
-                                    <div style="background:#f0fdf4;border-radius:8px;padding:0.5rem;">
-                                        <div style="font-weight:800;font-size:1rem;color:#166534;">{{ number_format($elec->votos_propio) }}</div>
-                                        <div style="font-size:0.62rem;color:#16a34a;font-weight:600;">Nuestros</div>
-                                    </div>
-                                    <div style="background:#fef2f2;border-radius:8px;padding:0.5rem;">
-                                        <div style="font-weight:800;font-size:1rem;color:#991b1b;">{{ number_format($elec->votos_competencia) }}</div>
-                                        <div style="font-size:0.62rem;color:#dc2626;font-weight:600;">Compet.</div>
-                                    </div>
-                                    <div style="background:{{ $elecDif >= 0 ? '#eff6ff' : '#fefce8' }};border-radius:8px;padding:0.5rem;">
-                                        <div style="font-weight:800;font-size:1rem;color:{{ $elecDif >= 0 ? '#1e40af' : '#92400e' }};">{{ $elecDif >= 0 ? '+' : '' }}{{ number_format($elecDif) }}</div>
-                                        <div style="font-size:0.62rem;color:{{ $elecDif >= 0 ? '#3b82f6' : '#d97706' }};font-weight:600;">{{ $elecDif >= 0 ? 'Ventaja' : 'Deficit' }}</div>
-                                    </div>
-                                </div>
-                                @if($elecTot > 0)
-                                <div style="height:6px;background:#fee2e2;border-radius:3px;overflow:hidden;">
-                                    <div style="height:100%;width:{{ $elecPct }}%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:3px;"></div>
-                                </div>
-                                <div style="display:flex;justify-content:space-between;margin-top:0.3rem;font-size:0.7rem;font-weight:600;">
-                                    <span style="color:#16a34a;">{{ $elecPct }}% nuestros</span>
-                                    <span style="color:#6b7280;">{{ $elec->candidatos_count }} candidatos activos</span>
-                                </div>
-                                @else
-                                <div style="font-size:0.75rem;color:#9ca3af;text-align:center;padding:0.25rem 0;">
-                                    Sin votos reportados · {{ $elec->candidatos_count }} candidatos activos
-                                </div>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-
-                <!-- Resumen Rápido -->
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        Resumen General
-                    </h3>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                        <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-radius: 12px;">
-                            <div style="font-size: 1.8rem; font-weight: 700; color: #1e40af;">{{ number_format($totalPuestos ?? 0) }}</div>
-                            <div style="font-size: 0.8rem; color: #3b82f6; font-weight: 500;">Puestos</div>
-                        </div>
-                        <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px;">
-                            <div style="font-size: 1.8rem; font-weight: 700; color: #92400e;">{{ number_format($totalTestigos ?? 0) }}</div>
-                            <div style="font-size: 0.8rem; color: #d97706; font-weight: 500;">Testigos</div>
-                        </div>
-                        <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px;">
-                            <div id="mesasReportadas" style="font-size: 1.8rem; font-weight: 700; color: #166534;">{{ number_format($mesasReportadas ?? 0) }}</div>
-                            <div style="font-size: 0.8rem; color: #16a34a; font-weight: 500;">Mesas Reportadas</div>
-                        </div>
-                        <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-radius: 12px;">
-                            <div style="font-size: 1.8rem; font-weight: 700; color: #7c3aed;">{{ number_format($totalMesas ?? 0) }}</div>
-                            <div style="font-size: 0.8rem; color: #8b5cf6; font-weight: 500;">Total Mesas</div>
-                        </div>
-                    </div>
+                    @if($elec->activa)
+                    <span style="background:#dcfce7;color:#16a34a;font-size:0.65rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:6px;">ACTIVA</span>
+                    @else
+                    <span style="background:#f3f4f6;color:#9ca3af;font-size:0.65rem;font-weight:700;padding:0.1rem 0.45rem;border-radius:6px;">INACTIVA</span>
+                    @endif
                 </div>
 
-                <!-- Gráfico de Cobertura de Mesas -->
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Cobertura de Mesas
-                    </h3>
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <div style="width: 140px; height: 140px;">
-                            <canvas id="chartCoberturaMesas"></canvas>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                    {{-- Votos propios --}}
+                    <div>
+                        <div style="font-size:2.4rem;font-weight:800;color:{{ $elecColor }};line-height:1;">
+                            {{ number_format($elec->votos_propio) }}
                         </div>
-                        <div style="flex: 1;">
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <span style="font-size: 0.85rem; color: #374151;">Cubiertas</span>
-                                    <span style="font-size: 0.85rem; font-weight: 600; color: #10b981;">{{ $mesasCubiertas ?? 0 }}</span>
-                                </div>
-                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: {{ $totalMesas > 0 ? round(($mesasCubiertas / $totalMesas) * 100) : 0 }}%;"></div>
-                                </div>
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <span style="font-size: 0.85rem; color: #374151;">Pendientes</span>
-                                    <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b;">{{ $totalMesasPendientes ?? 0 }}</span>
-                                </div>
-                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); width: {{ $totalMesas > 0 ? round(($totalMesasPendientes / $totalMesas) * 100) : 0 }}%;"></div>
-                                </div>
-                            </div>
-                            <div style="text-align: center; padding: 0.5rem; background: #f0fdf4; border-radius: 8px; margin-top: 0.5rem;">
-                                <span style="font-size: 1.2rem; font-weight: 700; color: #166534;">{{ $totalMesas > 0 ? round(($mesasCubiertas / $totalMesas) * 100) : 0 }}%</span>
-                                <span style="font-size: 0.75rem; color: #16a34a; display: block;">Cobertura</span>
-                            </div>
-                        </div>
+                        <div style="font-size:0.72rem;color:#6b7280;font-weight:600;margin-top:0.1rem;">votos propios</div>
+                        @if($ventaja > 0)
+                            <div style="font-size:0.75rem;color:#16a34a;font-weight:700;margin-top:0.3rem;">+{{ number_format($ventaja) }} ventaja</div>
+                        @elseif($ventaja < 0)
+                            <div style="font-size:0.75rem;color:#dc2626;font-weight:700;margin-top:0.3rem;">{{ number_format($ventaja) }} desventaja</div>
+                        @else
+                            <div style="font-size:0.75rem;color:#9ca3af;margin-top:0.3rem;">Sin datos aún</div>
+                        @endif
                     </div>
-                </div>
 
-                <!-- Gráfico de Progreso de Reportes -->
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Progreso de Reportes E14
-                    </h3>
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <div style="width: 140px; height: 140px;">
-                            <canvas id="chartProgresoReportes"></canvas>
+                    {{-- Progreso mesas --}}
+                    <div style="flex:1;min-width:130px;">
+                        <div style="font-size:0.7rem;color:#6b7280;font-weight:600;display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                            <span>Mesas reportadas</span>
+                            <span style="color:#1f2937;">{{ $mesasReportadas }}/{{ $mesasCubiertas }}</span>
                         </div>
-                        <div style="flex: 1;">
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <span style="font-size: 0.85rem; color: #374151;">Reportadas</span>
-                                    <span id="mesasReportadas2" style="font-size: 0.85rem; font-weight: 600; color: #10b981;">{{ $mesasReportadas ?? 0 }}</span>
-                                </div>
-                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: {{ $mesasCubiertas > 0 ? round(($mesasReportadas / $mesasCubiertas) * 100) : 0 }}%;"></div>
-                                </div>
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <span style="font-size: 0.85rem; color: #374151;">Sin Reportar</span>
-                                    <span id="mesasSinReportar" style="font-size: 0.85rem; font-weight: 600; color: #ef4444;">{{ $mesasSinReportar ?? 0 }}</span>
-                                </div>
-                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #ef4444, #dc2626); width: {{ $mesasCubiertas > 0 ? round(($mesasSinReportar / $mesasCubiertas) * 100) : 0 }}%;"></div>
-                                </div>
-                            </div>
-                            <div style="text-align: center; padding: 0.5rem; background: #faf5ff; border-radius: 8px; margin-top: 0.5rem;">
-                                <span style="font-size: 1.2rem; font-weight: 700; color: #7c3aed;">{{ $mesasCubiertas > 0 ? round(($mesasReportadas / $mesasCubiertas) * 100) : 0 }}%</span>
-                                <span style="font-size: 0.75rem; color: #8b5cf6; display: block;">Reportado</span>
-                            </div>
+                        <div class="prog-track">
+                            <div class="prog-fill" style="width:{{ $pctMesas }}%;background:{{ $elecColor }};"></div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Gráfico de Distribución por Zona -->
-                @if(isset($puestosPorZona) && $puestosPorZona->count() > 0)
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#f59e0b" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                        Puestos por Zona
-                    </h3>
-                    <div style="height: 200px;">
-                        <canvas id="chartPuestosZona"></canvas>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Testigos por Zona -->
-                @if(isset($testigosPorZona) && $testigosPorZona->count() > 0)
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                        Testigos por Zona
-                    </h3>
-                    <div style="height: 200px;">
-                        <canvas id="chartTestigosZona"></canvas>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Puestos con más Testigos Asignados -->
-                @if(isset($puestosConMasTestigos) && $puestosConMasTestigos->count() > 0)
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Top Puestos con Testigos
-                    </h3>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        @foreach($puestosConMasTestigos as $puesto)
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f3f4f6;">
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; color: #374151; font-weight: 500;">{{ $puesto->nombre }}</div>
-                                <div style="font-size: 0.75rem; color: #6b7280;">Zona {{ $puesto->zona }}</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
-                                    {{ $puesto->testigos_count }} testigos
-                                </span>
-                                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
-                                    {{ $puesto->total_mesas ?? 0 }} mesas
-                                </span>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-
-                <!-- Resumen de Asignación de Mesas -->
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#ef4444" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                        Estado de Asignaciones
-                    </h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-radius: 12px;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #166534;">{{ $mesasCubiertas ?? 0 }}</div>
-                            <div style="font-size: 0.75rem; color: #16a34a; font-weight: 500;">Mesas Asignadas</div>
-                        </div>
-                        <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px;">
-                            <div style="font-size: 1.5rem; font-weight: 700; color: #991b1b;">{{ $totalMesasPendientes ?? 0 }}</div>
-                            <div style="font-size: 0.75rem; color: #dc2626; font-weight: 500;">Mesas Pendientes</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 1rem; padding: 0.75rem; background: #f9fafb; border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.8rem;">
-                            <span style="color: #374151;">Progreso de asignación</span>
-                            <span style="font-weight: 600; color: #166534;">{{ $totalMesas > 0 ? round(($mesasCubiertas / $totalMesas) * 100) : 0 }}%</span>
-                        </div>
-                        <div style="height: 10px; background: #fee2e2; border-radius: 5px; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); width: {{ $totalMesas > 0 ? round(($mesasCubiertas / $totalMesas) * 100) : 0 }}%; border-radius: 5px;"></div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 0.75rem; text-align: center;">
-                        <span style="font-size: 0.8rem; color: #6b7280;">
-                            {{ $totalTestigos ?? 0 }} testigos para {{ $totalMesas ?? 0 }} mesas
-                            @if($totalMesas > 0 && $totalTestigos > 0)
-                                (promedio {{ number_format($totalMesas / $totalTestigos, 1) }} mesas/testigo)
-                            @endif
-                        </span>
+                        <div style="font-size:0.68rem;color:#9ca3af;margin-top:0.2rem;text-align:right;">{{ $pctMesas }}%</div>
                     </div>
                 </div>
             </div>
+            @endforeach
 
-            <!-- Sección de Calendario y Tablas -->
-            <div class="stats-grid fade-in">
-                <!-- Calendario 
-                <div class="calendar-card" style="grid-column: 1 / -1; margin-bottom: 2rem;">
-                    <div class="calendar-header">
-                        <div class="calendar-month" id="calendar-month"></div>
-                        <div class="calendar-nav">
-                            <button id="prev-month">&lt;</button>
-                            <button id="next-month">&gt;</button>
-                        </div>
+            {{-- Tarjeta de resumen global si hay más de una elección --}}
+            @if($elecciones->count() > 1)
+            <div class="d-card" style="padding:1.25rem 1.4rem;border-top:4px solid #667eea;display:flex;flex-direction:column;justify-content:center;gap:0.5rem;">
+                <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:#9ca3af;letter-spacing:0.5px;margin-bottom:0.25rem;">Resumen Global</div>
+                <div style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:1.6rem;font-weight:800;color:#1f2937;line-height:1;">{{ number_format($totalVotosReportados) }}</div>
+                        <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;">total votos propios</div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                        <div class="calendar-grid">
-                            <div class="weekdays">
-                                <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
-                            </div>
-                            <div class="days" id="calendar-days"></div>
-                        </div>
-                        <div class="event-list">
-                            <h3 style="margin: 1.5rem 0 1rem; color: #374151; font-weight: 600;">Próximas Elecciones</h3>
-                            
-                            <div class="event-item" onclick="jumpToDate(2, 2026)" style="cursor: pointer;" title="Ver en calendario">
-                                <div class="event-date">
-                                    08 <span>MAR</span>
-                                </div>
-                                <div class="event-info">
-                                    <div class="event-title">Elecciones Congreso</div>
-                                    <div class="event-desc">2026 - Votación Nacional</div>
-                                </div>
-                            </div>
+                    <div>
+                        <div style="font-size:1.6rem;font-weight:800;color:#6b7280;line-height:1;">{{ number_format($totalVotosCompetencia) }}</div>
+                        <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;">competencia</div>
+                    </div>
+                </div>
+                <div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">{{ $totalReportes }} reportes registrados</div>
+            </div>
+            @endif
+        </div>
 
-                            <div class="event-item" onclick="jumpToDate(4, 2026)" style="cursor: pointer;" title="Ver en calendario">
-                                <div class="event-date">
-                                    31 <span>MAY</span>
-                                </div>
-                                <div class="event-info">
-                                    <div class="event-title">Elecciones Presidencia</div>
-                                    <div class="event-desc">2026 - Primera Vuelta</div>
-                                </div>
+        {{-- ═══════════════════════════════════════
+             STATS BAR: 4 contadores
+        ═══════════════════════════════════════ --}}
+        <div class="stats-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.1rem;">
+            @php
+            $statsBar = [
+                ['lbl'=>'Testigos',      'val'=>$totalTestigos,      'color'=>'#3b82f6',
+                 'icon'=>'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
+                ['lbl'=>'Coordinadores', 'val'=>$totalCoordinadores, 'color'=>'#8b5cf6',
+                 'icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
+                ['lbl'=>'Puestos',       'val'=>$totalPuestos,       'color'=>'#10b981',
+                 'icon'=>'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'],
+                ['lbl'=>'Total Mesas',   'val'=>$totalMesas,         'color'=>'#f59e0b',
+                 'icon'=>'M3 10h18M3 14h18M10 3v18M14 3v18'],
+            ];
+            @endphp
+            @foreach($statsBar as $s)
+            <div class="d-card d-card-hover" style="padding:1rem 1.2rem;display:flex;align-items:center;gap:0.85rem;">
+                <div style="width:38px;height:38px;border-radius:10px;background:{{ $s['color'] }}1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="18" height="18" fill="none" stroke="{{ $s['color'] }}" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="{{ $s['icon'] }}"/>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-size:1.55rem;font-weight:800;color:#1f2937;line-height:1;">{{ number_format($s['val']) }}</div>
+                    <div style="font-size:0.7rem;color:#9ca3af;text-transform:uppercase;letter-spacing:0.4px;font-weight:600;margin-top:0.15rem;">{{ $s['lbl'] }}</div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- ═══════════════════════════════════════
+             DOS COLUMNAS: Reportes | Lateral
+        ═══════════════════════════════════════ --}}
+        <div class="dash-cols" style="display:grid;grid-template-columns:1fr 300px;gap:1.1rem;align-items:start;">
+
+            {{-- ─── Columna izquierda: Últimos Reportes ─── --}}
+            <div class="d-card" style="padding:1.25rem;">
+                <h3 style="font-size:0.85rem;font-weight:700;color:#1f2937;margin:0 0 1rem 0;display:flex;align-items:center;gap:0.5rem;">
+                    <svg width="16" height="16" fill="none" stroke="#667eea" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    Últimos Reportes
+                    <span style="background:#f3f4f6;color:#6b7280;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:6px;font-weight:600;margin-left:0.25rem;">{{ $ultimosReportes->count() }}</span>
+                </h3>
+
+                @if($ultimosReportesPorEleccion->isEmpty())
+                <div style="text-align:center;padding:2.5rem 1rem;color:#9ca3af;">
+                    <svg width="36" height="36" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="margin:0 auto 0.75rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <div style="font-size:0.85rem;">Sin reportes aún</div>
+                </div>
+                @else
+                @foreach($ultimosReportesPorEleccion as $elec)
+                @php $elecColor = $elec->color ?? '#667eea'; @endphp
+                <div style="margin-bottom:1.1rem;">
+                    {{-- Divisor de elección --}}
+                    <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:{{ $elecColor }};display:inline-block;flex-shrink:0;"></span>
+                        <span style="font-size:0.71rem;text-transform:uppercase;font-weight:700;color:{{ $elecColor }};letter-spacing:0.5px;">{{ $elec->nombre }}</span>
+                        <div style="flex:1;height:1px;background:#f3f4f6;"></div>
+                    </div>
+
+                    @foreach($elec->ultimosReportes as $r)
+                    <div class="report-row">
+                        {{-- Número de mesa --}}
+                        <div style="width:30px;height:30px;border-radius:8px;background:#f8fafc;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.7rem;font-weight:800;color:#6b7280;">
+                            {{ $r->mesa->numero_mesa ?? '?' }}
+                        </div>
+
+                        {{-- Puesto y testigo --}}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:0.83rem;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ $r->mesa?->puesto?->nombre ?? '—' }}
+                            </div>
+                            <div style="font-size:0.7rem;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ $r->testigo?->nombre ?? $r->mesa?->testigo?->nombre ?? 'Sin testigo' }}
+                                · {{ $r->updated_at->diffForHumans() }}
                             </div>
                         </div>
-                    </div>
-                </div>-->
 
-                <!-- Últimos Reportes E14 — separados por elección -->
-                @if(isset($ultimosReportesPorEleccion) && $ultimosReportesPorEleccion->isNotEmpty())
-                @foreach($ultimosReportesPorEleccion as $eleccionReporte)
-                <div class="modern-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden;">
-                    <div style="background: {{ $eleccionReporte->color }}; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h3 style="color: white; font-size: 1.1rem; font-weight: 700; margin: 0;">
-                                Últimos Reportes E14 — {{ $eleccionReporte->nombre }}
-                            </h3>
-                            <p style="color: rgba(255,255,255,0.8); font-size: 0.8rem; margin: 0.2rem 0 0 0;">
-                                {{ ucfirst($eleccionReporte->tipo_cargo) }}
-                                @if($eleccionReporte->fecha) · {{ $eleccionReporte->fecha->format('d/m/Y') }} @endif
-                            </p>
+                        {{-- Votos --}}
+                        <div style="text-align:right;flex-shrink:0;">
+                            <div style="font-size:0.9rem;font-weight:800;color:#1f2937;">{{ number_format($r->total_votos ?? 0) }}</div>
+                            <div style="font-size:0.66rem;color:#9ca3af;">votos</div>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 0.4rem 0.9rem; border-radius: 8px;">
-                            <span style="color: white; font-weight: 600; font-size: 0.875rem;">
-                                <span id="totalReportes">{{ $eleccionReporte->ultimosReportes->count() }}</span> reportes
-                            </span>
-                        </div>
+
+                        {{-- Indicador foto --}}
+                        @if($r->imagen_acta)
+                        <svg width="13" height="13" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2.5" style="flex-shrink:0;" title="Con foto de acta">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        @endif
                     </div>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f9fafb;">
-                                    <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; font-size:0.85rem;">Mesa</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; font-size:0.85rem;">Puesto</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; font-size:0.85rem;">Testigo</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: center; font-weight: 600; color: #166534; border-bottom: 1px solid #e5e7eb; font-size:0.85rem;">Votos Nuestros</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; font-size:0.85rem;">Fotos E14</th>
-                                    <th style="padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; font-size:0.85rem;">Fecha</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($eleccionReporte->ultimosReportes as $reporte)
-                                <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
-                                    <td style="padding: 0.75rem 1rem;">
-                                        <span style="background: {{ $eleccionReporte->color }}; color: white; padding: 0.2rem 0.6rem; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
-                                            Mesa #{{ $reporte->mesa->numero_mesa ?? 'N/A' }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; color: #374151; font-size:0.875rem;">{{ $reporte->mesa->puesto->nombre ?? 'N/A' }}</td>
-                                    <td style="padding: 0.75rem 1rem; color: #374151; font-size:0.875rem;">{{ $reporte->testigo->nombre ?? ($reporte->mesa->testigo->nombre ?? 'Coordinador') }}</td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($reporte->total_votos)
-                                            <span style="background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700; font-size:0.85rem;">
-                                                {{ number_format($reporte->total_votos) }}
-                                            </span>
-                                        @else
-                                            <span style="color: #9ca3af; font-size:0.8rem;">—</span>
-                                        @endif
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($reporte->imagen_acta && count($reporte->imagen_acta) > 0)
-                                            <div style="display:flex;flex-wrap:wrap;gap:0.3rem;justify-content:center;">
-                                                @foreach($reporte->imagen_acta as $fi => $img)
-                                                    <a href="{{ Storage::url($img) }}" target="_blank"
-                                                       style="display:inline-flex;align-items:center;gap:0.2rem;color:#059669;text-decoration:none;font-weight:500;font-size:0.75rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:2px 6px;">
-                                                        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                        </svg>
-                                                        {{ $fi + 1 }}
-                                                    </a>
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            <span style="color: #9ca3af; font-size:0.8rem;">Sin foto</span>
-                                        @endif
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; color: #6b7280; font-size: 0.8rem;">
-                                        {{ $reporte->created_at->format('d/m H:i') }}
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    @endforeach
                 </div>
                 @endforeach
                 @endif
+            </div>
 
-                <!-- Votos por Puesto -->
-                @if(isset($votosPorPuesto) && $votosPorPuesto->count() > 0)
-                <div class="modern-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden;">
-                    <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin: 0;">Votos por Puesto</h3>
-                            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin: 0.25rem 0 0 0;">Resumen de votos reportados por cada puesto de votacion</p>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px;">
-                            <span style="color: white; font-weight: 600;">{{ $votosPorPuesto->count() }} puestos con reportes</span>
-                        </div>
-                    </div>
-                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead style="position: sticky; top: 0; z-index: 10;">
-                                <tr style="background: #f9fafb;">
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Municipio</th>
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Puesto</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Mesas</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #16a34a; border-bottom: 1px solid #e5e7eb;">Candidato</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #dc2626; border-bottom: 1px solid #e5e7eb;">Competencia</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Dif.</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($votosPorPuesto as $puesto)
-                                @php
-                                    $difPuesto = ($puesto->total_votos ?? 0) - ($puesto->votos_competencia ?? 0);
-                                    $esPositivoPuesto = $difPuesto >= 0;
-                                @endphp
-                                <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
-                                    <td style="padding: 0.75rem 1rem; font-size: 0.875rem; color: #6b7280;">
-                                        {{ str_pad($puesto->municipio_codigo, 3, '0', STR_PAD_LEFT) }} - {{ $puesto->municipio_nombre }}
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; color: #374151; font-weight: 500; font-size: 0.875rem;">{{ $puesto->nombre }}</td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: #f3e8ff; color: #7c3aed; padding: 0.2rem 0.5rem; border-radius: 12px; font-weight: 600; font-size: 0.8rem;">
-                                            {{ $puesto->mesas_reportadas }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700;">
-                                            {{ number_format($puesto->total_votos ?? 0) }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700;">
-                                            {{ number_format($puesto->votos_competencia ?? 0) }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: {{ $esPositivoPuesto ? '#dbeafe' : '#fef3c7' }}; color: {{ $esPositivoPuesto ? '#1e40af' : '#92400e' }}; padding: 0.2rem 0.5rem; border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
-                                            {{ $esPositivoPuesto ? '+' : '' }}{{ number_format($difPuesto) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot style="position: sticky; bottom: 0;">
-                                @php
-                                    $totalCandidatoPuesto = $votosPorPuesto->sum('total_votos');
-                                    $totalCompetenciaPuesto = $votosPorPuesto->sum('votos_competencia');
-                                    $difTotalPuesto = $totalCandidatoPuesto - $totalCompetenciaPuesto;
-                                @endphp
-                                <tr style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); font-weight: 700;">
-                                    <td colspan="2" style="padding: 1rem; color: #166534;">TOTAL GENERAL</td>
-                                    <td style="padding: 1rem; text-align: center; color: #7c3aed;">{{ $votosPorPuesto->sum('mesas_reportadas') }}</td>
-                                    <td style="padding: 1rem; text-align: center; color: #166534; font-size: 1.1rem;">{{ number_format($totalCandidatoPuesto) }}</td>
-                                    <td style="padding: 1rem; text-align: center; color: #991b1b; font-size: 1.1rem;">{{ number_format($totalCompetenciaPuesto) }}</td>
-                                    <td style="padding: 1rem; text-align: center; color: {{ $difTotalPuesto >= 0 ? '#1e40af' : '#92400e' }}; font-size: 1.1rem;">{{ $difTotalPuesto >= 0 ? '+' : '' }}{{ number_format($difTotalPuesto) }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-                @endif
+            {{-- ─── Columna derecha: Accesos + Cobertura ─── --}}
+            <div style="display:flex;flex-direction:column;gap:1rem;">
 
-                <!-- Votos por Mesa -->
-                @if(isset($votosPorMesa) && $votosPorMesa->count() > 0)
-                <div class="modern-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden;">
-                    <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin: 0;">Votos por Mesa</h3>
-                            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin: 0.25rem 0 0 0;">Detalle de votos reportados por cada mesa</p>
-                        </div>
-                        <div style="display: flex; gap: 1rem;">
-                            <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px;">
-                                <span style="color: white; font-weight: 600;">{{ $votosPorMesa->where('tiene_reporte', 1)->count() }} con reporte</span>
+                {{-- Accesos rápidos --}}
+                <div class="d-card" style="padding:1rem;">
+                    <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:#9ca3af;letter-spacing:0.4px;margin-bottom:0.5rem;padding:0 0.125rem;">
+                        Accesos Rápidos
+                    </div>
+                    <nav style="display:flex;flex-direction:column;gap:0.1rem;">
+                        @php
+                        $qLinks = [
+                            ['label'=>'Testigos',       'route'=>'testigos.index',      'color'=>'#3b82f6',
+                             'icon'=>'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
+                            ['label'=>'Coordinadores',  'route'=>'coordinadores.index', 'color'=>'#8b5cf6',
+                             'icon'=>'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
+                            ['label'=>'Resultados',     'route'=>'resultados.index',    'color'=>'#10b981',
+                             'icon'=>'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
+                            ['label'=>'Municipios',     'route'=>'municipios.index',    'color'=>'#ef4444',
+                             'icon'=>'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z'],
+                            ['label'=>'Actas',          'route'=>'actas.index',         'color'=>'#f59e0b',
+                             'icon'=>'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01'],
+                            ['label'=>'Elecciones',     'route'=>'elecciones.index',    'color'=>'#6366f1',
+                             'icon'=>'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'],
+                        ];
+                        @endphp
+                        @foreach($qLinks as $lnk)
+                        <a href="{{ route($lnk['route']) }}" class="q-link">
+                            <div style="width:28px;height:28px;border-radius:7px;background:{{ $lnk['color'] }}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <svg width="14" height="14" fill="none" stroke="{{ $lnk['color'] }}" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $lnk['icon'] }}"/>
+                                </svg>
                             </div>
-                            <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px;">
-                                <span style="color: white; font-weight: 600;">{{ $votosPorMesa->where('tiene_reporte', 0)->count() }} sin reporte</span>
-                            </div>
-                        </div>
+                            {{ $lnk['label'] }}
+                        </a>
+                        @endforeach
+                    </nav>
+                </div>
+
+                {{-- Cobertura de Mesas --}}
+                <div class="d-card" style="padding:1.1rem 1.25rem;">
+                    <div style="font-size:0.7rem;text-transform:uppercase;font-weight:700;color:#9ca3af;letter-spacing:0.4px;margin-bottom:0.875rem;">
+                        Cobertura de Mesas
                     </div>
-                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead style="position: sticky; top: 0; z-index: 10;">
-                                <tr style="background: #f9fafb;">
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Puesto</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Mesa</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #16a34a; border-bottom: 1px solid #e5e7eb;">Candidato</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #dc2626; border-bottom: 1px solid #e5e7eb;">Competencia</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($votosPorMesa as $mesa)
-                                <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s; {{ $mesa->tiene_reporte ? '' : 'opacity: 0.7;' }}" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
-                                    <td style="padding: 0.75rem 1rem; color: #374151; font-size: 0.875rem;">{{ $mesa->puesto_nombre }}</td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 600; font-size: 0.8rem;">
-                                            #{{ $mesa->numero_mesa }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($mesa->tiene_reporte)
-                                            <span style="background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700;">
-                                                {{ number_format($mesa->total_votos) }}
-                                            </span>
-                                        @else
-                                            <span style="color: #9ca3af;">-</span>
-                                        @endif
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($mesa->tiene_reporte)
-                                            <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700;">
-                                                {{ number_format($mesa->votos_competencia) }}
-                                            </span>
-                                        @else
-                                            <span style="color: #9ca3af;">-</span>
-                                        @endif
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($mesa->tiene_reporte)
-                                            <span style="background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
-                                                Reportada
-                                            </span>
-                                        @else
-                                            <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
-                                                Pendiente
-                                            </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot style="position: sticky; bottom: 0;">
-                                @php
-                                    $totalCandidatoMesa = $votosPorMesa->sum('total_votos');
-                                    $totalCompetenciaMesa = $votosPorMesa->sum('votos_competencia');
-                                @endphp
-                                <tr style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); font-weight: 700;">
-                                    <td colspan="2" style="padding: 1rem; color: #92400e;">TOTAL VOTOS</td>
-                                    <td style="padding: 1rem; text-align: center; color: #166534; font-size: 1.1rem;">{{ number_format($totalCandidatoMesa) }}</td>
-                                    <td style="padding: 1rem; text-align: center; color: #991b1b; font-size: 1.1rem;">{{ number_format($totalCompetenciaMesa) }}</td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    @php
+                        $pctAsig = $totalMesas > 0 ? round($mesasCubiertas / $totalMesas * 100) : 0;
+                        $pctRep  = $mesasCubiertas > 0 ? round($mesasReportadas / $mesasCubiertas * 100) : 0;
+                    @endphp
+
+                    {{-- Asignadas --}}
+                    <div style="margin-bottom:0.875rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:600;color:#374151;margin-bottom:0.3rem;">
+                            <span>Asignadas a testigos</span>
+                            <span>{{ $mesasCubiertas }}/{{ $totalMesas }}</span>
+                        </div>
+                        <div class="prog-track">
+                            <div class="prog-fill" style="width:{{ $pctAsig }}%;background:#3b82f6;"></div>
+                        </div>
+                        <div style="font-size:0.67rem;color:#9ca3af;margin-top:0.2rem;text-align:right;">{{ $pctAsig }}% asignado</div>
+                    </div>
+
+                    {{-- Reportadas --}}
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:0.78rem;font-weight:600;color:#374151;margin-bottom:0.3rem;">
+                            <span>Con reporte de votos</span>
+                            <span>{{ $mesasReportadas }}/{{ $mesasCubiertas }}</span>
+                        </div>
+                        <div class="prog-track">
+                            <div class="prog-fill" style="width:{{ $pctRep }}%;background:#10b981;"></div>
+                        </div>
+                        <div style="font-size:0.67rem;color:#9ca3af;margin-top:0.2rem;text-align:right;">{{ $pctRep }}% reportado</div>
+                    </div>
+
+                    {{-- Mini contadores --}}
+                    <div style="margin-top:1rem;padding-top:0.875rem;border-top:1px solid #f3f4f6;display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;text-align:center;">
+                        <div style="padding:0.5rem;background:#fef3c7;border-radius:8px;">
+                            <div style="font-size:1.3rem;font-weight:800;color:#d97706;">{{ $totalMesasPendientes }}</div>
+                            <div style="font-size:0.65rem;color:#92400e;font-weight:700;text-transform:uppercase;">Pendientes</div>
+                        </div>
+                        <div style="padding:0.5rem;background:#dcfce7;border-radius:8px;">
+                            <div style="font-size:1.3rem;font-weight:800;color:#16a34a;">{{ $mesasReportadas }}</div>
+                            <div style="font-size:0.65rem;color:#166534;font-weight:700;text-transform:uppercase;">Reportadas</div>
+                        </div>
                     </div>
                 </div>
-                @endif
-            </div>
-            </div>
 
-            <!-- Enlaces rápidos 
-            <div style="margin-top: 2rem;">
-                <h3 style="color: #374151; font-size: 1rem; font-weight: 600; margin-bottom: 1rem; padding-left: 0.5rem; border-left: 3px solid #667eea;">Accesos Rápidos</h3>
-            </div>
-            <div class="management-grid fade-in">-->
-                <!-- Gestión de Personas 
-                <div class="modern-card" style="padding: 2rem;">
-                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                        <div class="icon-circle icon-blue" style="width: 50px; height: 50px; margin-right: 1rem;">
-                            <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 style="color: #1f2937; font-size: 1.25rem; font-weight: bold; margin: 0;">Gestión de Personas</h3>
-                    </div>
-                    
-                    <div>
-                        <a href="{{ route('personas.index') }}" class="btn-gradient">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline; margin-right: 0.5rem;" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                            Ver Todas las Personas
-                        </a>
-                        <a href="{{ route('personas.create') }}" class="btn-secondary">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline; margin-right: 0.5rem;" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Agregar Nueva Persona
-                        </a>
-                    </div>
-                </div>-->
+            </div>{{-- fin col derecha --}}
+        </div>{{-- fin dos columnas --}}
 
-                <!-- Gestión de Puestos 
-                <div class="modern-card management-card">
-                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                        <div class="icon-circle icon-green" style="margin-right: 0.75rem;">
-                            <svg width="16" height="16" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <h3 style="color: #1f2937; font-weight: bold; margin: 0;">Puestos</h3>
-                    </div>
-
-                    <div>
-                        <a href="{{ route('puestos.index') }}" class="btn-gradient">Ver Puestos</a>
-                        <a href="{{ route('puestos.create') }}" class="btn-secondary">+ Agregar</a>
-                    </div>
-                </div>-->
-
-                <!-- Gestión de Testigos
-                <div class="modern-card management-card">
-                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                        <div class="icon-circle icon-yellow" style="margin-right: 0.75rem;">
-                            <svg width="16" height="16" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 style="color: #1f2937; font-weight: bold; margin: 0;">Testigos</h3>
-                    </div>
-
-                    <div>
-                        <a href="{{ route('testigos.index') }}" class="btn-gradient">Ver Testigos</a>
-                        <a href="{{ route('testigos.create') }}" class="btn-secondary">+ Agregar</a>
-                    </div>
-                </div> -->
-                @if(auth()->user()->canManageUsers())
-                <!-- Gestión de Usuarios 
-                <div class="modern-card management-card">
-                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
-                        <div class="icon-circle icon-purple" style="margin-right: 0.75rem;">
-                            <svg width="16" height="16" fill="none" stroke="white" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 style="color: #1f2937; font-weight: bold; margin: 0;">Usuarios</h3>
-                    </div>
-
-                    <div>
-                        <a href="{{ route('users.index') }}" class="btn-gradient">Ver Usuarios</a>
-                        <a href="{{ route('users.create') }}" class="btn-secondary">+ Crear</a>
-                    </div>
-                </div>
-                @endif
-            </div>
-    </div>-->
-
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Configuración de gráficos
-            const chartColors = {
-                green: '#10b981',
-                greenLight: '#34d399',
-                yellow: '#f59e0b',
-                yellowLight: '#fbbf24',
-                red: '#ef4444',
-                redLight: '#f87171',
-                blue: '#3b82f6',
-                blueLight: '#60a5fa',
-                purple: '#8b5cf6',
-                purpleLight: '#a78bfa',
-                gray: '#e5e7eb'
-            };
-
-            // Gráfico de Cobertura de Mesas (Dona)
-            const ctxCobertura = document.getElementById('chartCoberturaMesas');
-            if (ctxCobertura) {
-                new Chart(ctxCobertura, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Cubiertas', 'Pendientes'],
-                        datasets: [{
-                            data: [{{ $mesasCubiertas ?? 0 }}, {{ $totalMesasPendientes ?? 0 }}],
-                            backgroundColor: [chartColors.green, chartColors.yellow],
-                            borderWidth: 0,
-                            cutout: '70%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico de Progreso de Reportes (Dona)
-            const ctxProgreso = document.getElementById('chartProgresoReportes');
-            if (ctxProgreso) {
-                new Chart(ctxProgreso, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Reportadas', 'Sin Reportar'],
-                        datasets: [{
-                            data: [{{ $mesasReportadas ?? 0 }}, {{ $mesasSinReportar ?? 0 }}],
-                            backgroundColor: [chartColors.green, chartColors.red],
-                            borderWidth: 0,
-                            cutout: '70%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico Comparativo de Votos (Candidato vs Competencia)
-            const ctxComparativo = document.getElementById('chartComparativoVotos');
-            if (ctxComparativo) {
-                new Chart(ctxComparativo, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Nuestro Candidato', 'Competencia'],
-                        datasets: [{
-                            data: [{{ $totalVotosReportados ?? 0 }}, {{ $totalVotosCompetencia ?? 0 }}],
-                            backgroundColor: ['#22c55e', '#ef4444'],
-                            borderWidth: 3,
-                            borderColor: '#ffffff',
-                            cutout: '60%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { display: false }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico de Puestos por Zona (Barras)
-            const ctxZona = document.getElementById('chartPuestosZona');
-            if (ctxZona) {
-                @if(isset($puestosPorZona) && $puestosPorZona->count() > 0)
-                const zonaLabels = {!! json_encode($puestosPorZona->pluck('zona')->toArray()) !!};
-                const zonaTotales = {!! json_encode($puestosPorZona->pluck('total')->toArray()) !!};
-
-                const zonaColors = zonaLabels.map((_, i) => {
-                    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899'];
-                    return colors[i % colors.length];
-                });
-
-                new Chart(ctxZona, {
-                    type: 'bar',
-                    data: {
-                        labels: zonaLabels.map(z => 'Zona ' + z),
-                        datasets: [{
-                            label: 'Puestos',
-                            data: zonaTotales,
-                            backgroundColor: zonaColors.map(c => c + 'cc'),
-                            borderColor: zonaColors,
-                            borderWidth: 1,
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            x: { grid: { display: false } },
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(0,0,0,0.05)' }
-                            }
-                        }
-                    }
-                });
-                @endif
-            }
-
-            // Gráfico de Testigos por Zona (Barras)
-            const ctxTestigosZona = document.getElementById('chartTestigosZona');
-            if (ctxTestigosZona) {
-                @if(isset($testigosPorZona) && $testigosPorZona->count() > 0)
-                const testigoZonaLabels = {!! json_encode($testigosPorZona->pluck('zona')->toArray()) !!};
-                const testigoZonaTotales = {!! json_encode($testigosPorZona->pluck('total')->toArray()) !!};
-
-                const testigoColors = testigoZonaLabels.map((_, i) => {
-                    const colors = ['#8b5cf6', '#06b6d4', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
-                    return colors[i % colors.length];
-                });
-
-                new Chart(ctxTestigosZona, {
-                    type: 'bar',
-                    data: {
-                        labels: testigoZonaLabels.map(z => 'Zona ' + z),
-                        datasets: [{
-                            label: 'Testigos',
-                            data: testigoZonaTotales,
-                            backgroundColor: testigoColors.map(c => c + 'cc'),
-                            borderColor: testigoColors,
-                            borderWidth: 1,
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            x: { grid: { display: false } },
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: 'rgba(0,0,0,0.05)' }
-                            }
-                        }
-                    }
-                });
-                @endif
-            }
-
-        });
-
-        // Global Calendar Logic (Outside DOMContentLoaded)
-        window.calendarDate = new Date();
-        window.calendarEvents = [
-            { day: 8, month: 2, year: 2026, title: 'Congreso', type: 'event-congress' },
-            { day: 31, month: 4, year: 2026, title: 'Presidencia', type: 'event' }
-        ];
-
-        window.renderCalendar = function() {
-            const date = window.calendarDate;
-            date.setDate(1);
-            
-            const calendarDays = document.getElementById('calendar-days');
-            const calendarMonth = document.getElementById('calendar-month');
-            
-            if (!calendarDays || !calendarMonth) return;
-
-            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-            const firstDayIndex = date.getDay();
-            const lastDayIndex = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDay();
-            const nextDays = 7 - lastDayIndex - 1;
-
-            const months = [
-                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-            ];
-
-            calendarMonth.innerHTML = `${months[date.getMonth()]} ${date.getFullYear()}`;
-
-            let days = "";
-
-            for (let x = firstDayIndex; x > 0; x--) {
-                days += `<div class="day empty"></div>`;
-            }
-
-            for (let i = 1; i <= lastDay; i++) {
-                let className = "day";
-                
-                const today = new Date();
-                if (
-                    i === today.getDate() &&
-                    date.getMonth() === today.getMonth() &&
-                    date.getFullYear() === today.getFullYear()
-                ) {
-                    className += " today";
-                }
-
-                const event = window.calendarEvents.find(e => e.day === i && e.month === date.getMonth() && e.year === date.getFullYear());
-                if (event) {
-                    className += " " + event.type;
-                    days += `<div class="${className}" title="${event.title}">${i}</div>`;
-                } else {
-                    days += `<div class="${className}">${i}</div>`;
-                }
-            }
-
-            for (let j = 1; j <= nextDays; j++) {
-                days += `<div class="day empty"></div>`;
-            }
-            
-            calendarDays.innerHTML = days;
-        };
-
-        window.jumpToDate = function(month, year) {
-            window.calendarDate.setMonth(month);
-            window.calendarDate.setFullYear(year);
-            window.renderCalendar();
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            window.renderCalendar();
-
-            const prevMonthBtn = document.getElementById('prev-month');
-            const nextMonthBtn = document.getElementById('next-month');
-
-            if (prevMonthBtn) {
-                prevMonthBtn.addEventListener('click', () => {
-                    window.calendarDate.setMonth(window.calendarDate.getMonth() - 1);
-                    window.renderCalendar();
-                });
-            }
-
-            if (nextMonthBtn) {
-                nextMonthBtn.addEventListener('click', () => {
-                    window.calendarDate.setMonth(window.calendarDate.getMonth() + 1);
-                    window.renderCalendar();
-                });
-            }
-        });
-
-        // ============================================
-        // ACTUALIZACIÓN EN TIEMPO REAL DEL DASHBOARD
-        // ============================================
-        
-        let lastTimestamp = {{ now()->timestamp }};
-        let isUpdating = false;
-
-        // Función para animar cambios en contadores
-        function animateCounter(elementId, newValue) {
-            const element = document.getElementById(elementId);
-            if (!element) {
-                console.warn(`⚠️ Elemento no encontrado: #${elementId}`);
-                return;
-            }
-
-            const currentValue = parseInt(element.textContent.replace(/,/g, '')) || 0;
-            if (currentValue === newValue) {
-                console.log(`ℹ️ ${elementId}: Sin cambios (${currentValue})`);
-                return;
-            }
-
-            console.log(`✨ Actualizando #${elementId}: ${currentValue} → ${newValue}`);
-
-            // Animación de pulso
-            element.style.transition = 'all 0.3s ease';
-            element.style.transform = 'scale(1.1)';
-            element.style.color = '#10b981';
-            
-            // Actualizar valor con formato
-            element.textContent = newValue.toLocaleString('es-ES');
-            
-            setTimeout(() => {
-                element.style.transform = 'scale(1)';
-                element.style.color = '';
-            }, 300);
-        }
-
-        // Función para actualizar porcentajes y barras
-        function updatePercentageBar(candidatoVotos, competenciaVotos) {
-            const total = candidatoVotos + competenciaVotos;
-            if (total === 0) return;
-
-            const pctCandidato = Math.round((candidatoVotos / total) * 100 * 10) / 10;
-            const pctCompetencia = Math.round((competenciaVotos / total) * 100 * 10) / 10;
-
-            // Actualizar porcentajes
-            const pctElements = document.querySelectorAll('[data-candidato-pct]');
-            pctElements.forEach(el => el.textContent = pctCandidato + '%');
-
-            const pctCompElements = document.querySelectorAll('[data-competencia-pct]');
-            pctCompElements.forEach(el => el.textContent = pctCompetencia + '%');
-
-            // Actualizar barras de progreso
-            const bars = document.querySelectorAll('[data-progress-bar]');
-            bars.forEach(bar => {
-                bar.style.width = pctCandidato + '%';
-            });
-        }
-
-        // Función para actualizar tabla de últimos reportes
-        function updateReportesTable(reportes) {
-            const tbody = document.querySelector('table tbody');
-            if (!tbody || reportes.length === 0) return;
-
-            // Verificar si hay reportes nuevos
-            const firstReporteId = tbody.querySelector('tr')?.dataset?.reporteId;
-            const hasNewReportes = reportes[0].id != firstReporteId;
-
-            if (hasNewReportes) {
-                // Mostrar notificación
-                showNotification('Nuevo reporte E14 recibido');
-
-                // Reconstruir tabla
-                tbody.innerHTML = reportes.map(reporte => `
-                    <tr data-reporte-id="${reporte.id}" style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s; animation: fadeIn 0.5s;" 
-                        onmouseover="this.style.background='#f9fafb'" 
-                        onmouseout="this.style.background='white'">
-                        <td style="padding: 1rem;">
-                            <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600; font-size: 0.875rem;">
-                                Mesa #${reporte.mesa_numero}
-                            </span>
-                        </td>
-                        <td style="padding: 1rem; color: #374151;">${reporte.puesto_nombre}</td>
-                        <td style="padding: 1rem; color: #374151;">${reporte.testigo_nombre}</td>
-                        <td style="padding: 1rem; text-align: center;">
-                            ${reporte.total_votos ? 
-                                `<span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 600;">${reporte.total_votos.toLocaleString()}</span>` : 
-                                '<span style="color: #9ca3af;">-</span>'}
-                        </td>
-                        <td style="padding: 1rem; text-align: center;">
-                            ${reporte.imagen_acta && reporte.imagen_acta.length > 0
-                                ? reporte.imagen_acta.map((img, fi) =>
-                                    `<a href="/storage/${img}" target="_blank" style="display:inline-flex;align-items:center;gap:0.2rem;color:#059669;text-decoration:none;font-weight:500;font-size:0.8rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:2px 7px;margin:1px;">
-                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>Foto ${fi+1}</a>`).join('')
-                                : '<span style="color: #9ca3af;">Sin foto</span>'}
-                        </td>
-                        <td style="padding: 1rem; color: #6b7280; font-size: 0.875rem;">${reporte.created_at}</td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        // Función para mostrar notificación
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-                z-index: 9999;
-                animation: slideIn 0.3s ease-out;
-                font-weight: 600;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-out';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        // Función principal de actualización
-        async function updateDashboard() {
-            if (isUpdating) {
-                console.log('⏳ Actualización en progreso, saltando...');
-                return;
-            }
-            
-            isUpdating = true;
-            console.log('🔄 Consultando estadísticas actualizadas...');
-
-            try {
-                const response = await fetch('{{ route("dashboard.stats") }}');
-                if (!response.ok) throw new Error('Error al obtener estadísticas');
-
-                const data = await response.json();
-                console.log('📥 Datos recibidos:', data);
-
-                // Solo actualizar si hay cambios
-                if (data.timestamp > lastTimestamp) {
-                    console.log('✅ Cambios detectados, actualizando dashboard');
-                    console.log('  - Votos Candidato:', data.totalVotosReportados);
-                    console.log('  - Votos Competencia:', data.totalVotosCompetencia);
-                    console.log('  - Mesas Reportadas:', data.mesasReportadas);
-                    
-                    // Actualizar contadores principales
-                    animateCounter('totalVotosReportados', data.totalVotosReportados);
-                    animateCounter('totalVotosCompetencia', data.totalVotosCompetencia);
-                    animateCounter('mesasReportadas', data.mesasReportadas);
-                    animateCounter('mesasReportadas2', data.mesasReportadas);
-                    animateCounter('mesasSinReportar', data.mesasSinReportar);
-                    animateCounter('totalReportes', data.totalReportes);
-
-                    // Actualizar porcentajes y barras
-                    updatePercentageBar(data.totalVotosReportados, data.totalVotosCompetencia);
-
-                    // Actualizar tabla de reportes
-                    updateReportesTable(data.ultimosReportes);
-
-                    lastTimestamp = data.timestamp;
-                } else {
-                    console.log('ℹ️ Sin cambios desde la última actualización');
-                }
-            } catch (error) {
-                console.error('❌ Error actualizando dashboard:', error);
-            } finally {
-                isUpdating = false;
-            }
-        }
-
-        // Iniciar polling cada 15 segundos
-        console.log('⏰ Sistema de actualización en tiempo real iniciado - Polling cada 15 segundos');
-        setInterval(updateDashboard, 15000);
-
-        // Primera actualización inmediata para probar (después de 2 segundos)
-        setTimeout(() => {
-            console.log('🎯 Ejecutando primera actualización de prueba...');
-            updateDashboard();
-        }, 2000);
-
-        // Agregar estilos para animaciones
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(-10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-
+    </div>
+    </div>
 </x-app-layout>

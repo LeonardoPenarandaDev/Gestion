@@ -41,8 +41,15 @@ class Mesa extends Model
     }
 
     /**
-     * Relación con ResultadoMesa
-     * Una mesa puede tener un resultado reportado
+     * Relación con ResultadoMesa (un resultado por elección)
+     */
+    public function resultados()
+    {
+        return $this->hasMany(ResultadoMesa::class, 'mesa_id', 'id');
+    }
+
+    /**
+     * Resultado para una elección específica (compatibilidad legacy si se necesita)
      */
     public function resultado()
     {

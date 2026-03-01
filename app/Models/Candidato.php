@@ -9,6 +9,7 @@ class Candidato extends Model
     protected $table = 'candidatos';
 
     protected $fillable = [
+        'eleccion_id',
         'nombre',
         'tipo',
         'cargo',
@@ -19,6 +20,11 @@ class Candidato extends Model
     protected $casts = [
         'activo' => 'boolean',
     ];
+
+    public function eleccion()
+    {
+        return $this->belongsTo(Eleccion::class);
+    }
 
     public function votosCandidatos()
     {

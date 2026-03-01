@@ -309,14 +309,21 @@
 
                 <!-- Form Content -->
                 <div class="form-content">
-                    <div class="info-card">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    @if ($errors->any())
+                    <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border: 1px solid #f87171; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start;">
+                        <svg width="20" height="20" fill="none" stroke="#b91c1c" viewBox="0 0 24 24" stroke-width="2" style="flex-shrink:0; margin-right: 0.75rem; margin-top: 2px;">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L4.18 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                         </svg>
-                        <div class="info-card-text">
-                            Un testigo debe estar asociado a una zona y puesto específico. Los campos marcados con <strong>*</strong> son obligatorios.
+                        <div style="color: #b91c1c; font-size: 0.875rem; font-weight: 500;">
+                            <strong>Por favor corrige los siguientes errores:</strong>
+                            <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
+                    @endif
 
                     <form action="{{ route('testigos.store') }}" method="POST">
                         @csrf

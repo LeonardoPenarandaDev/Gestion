@@ -174,6 +174,68 @@
                 </div>
             @endif
 
+            {{-- Elecciones activas --}}
+            @if($elecciones->isNotEmpty())
+            <div style="margin-bottom: 2rem;">
+                <h3 style="font-size: 1rem; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem;">
+                    Elecciones del día
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    @foreach($elecciones as $eleccion)
+                    @php
+                        $propios = $eleccion->candidatos->where('tipo','propio')->values();
+                        $competencia = $eleccion->candidatos->where('tipo','competencia')->values();
+                    @endphp
+                    <div style="background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.06);">
+                        <div style="background: {{ $eleccion->color }}; padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div style="color: white; font-weight: 700; font-size: 0.95rem;">{{ $eleccion->nombre }}</div>
+                                @if($eleccion->fecha)
+                                    <div style="color: rgba(255,255,255,0.8); font-size: 0.75rem;">
+                                        {{ \Carbon\Carbon::parse($eleccion->fecha)->format('d/m/Y') }}
+                                    </div>
+                                @endif
+                            </div>
+                            <span style="background: rgba(255,255,255,0.2); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 8px; text-transform: uppercase;">
+                                {{ $eleccion->tipo_cargo }}
+                            </span>
+                        </div>
+                        <div style="padding: 1rem 1.25rem;">
+                            @if($propios->isNotEmpty())
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="font-size: 0.7rem; font-weight: 700; color: #15803d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">
+                                    Nuestro(s) candidato(s)
+                                </div>
+                                @foreach($propios as $c)
+                                <div style="display: flex; align-items: center; gap: 0.5rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 0.4rem 0.75rem; margin-bottom: 0.3rem;">
+                                    <svg style="width:0.9rem;height:0.9rem;color:#16a34a;flex-shrink:0;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                                    <span style="font-weight: 600; color: #166534; font-size: 0.85rem;">{{ $c->nombre }}</span>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+                            @if($competencia->isNotEmpty())
+                            <div>
+                                <div style="font-size: 0.7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.4rem;">
+                                    Competencia ({{ $competencia->count() }} candidatos)
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                                    @foreach($competencia->take(6) as $c)
+                                    <span style="background: #f3f4f6; color: #4b5563; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 6px; font-weight: 500;">{{ $c->nombre }}</span>
+                                    @endforeach
+                                    @if($competencia->count() > 6)
+                                    <span style="background: #f3f4f6; color: #9ca3af; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 6px;">+{{ $competencia->count() - 6 }} más</span>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Total de Mesas</div>
@@ -206,56 +268,54 @@
 
                 <div style="padding: 2rem;">
                     @forelse($mesas as $mesa)
-                        <div class="mesa-card {{ $mesa->resultado ? 'reportada' : 'pendiente' }}">
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    @php
+                        $resultadosPorEleccion = $mesa->resultados->keyBy('eleccion_id');
+                        $todasBloqueadas = $elecciones->isNotEmpty() && $elecciones->every(
+                            fn($e) => isset($resultadosPorEleccion[$e->id]) && $resultadosPorEleccion[$e->id]->bloqueada
+                        );
+                        $algunaReportada = $resultadosPorEleccion->isNotEmpty();
+                    @endphp
+                        <div class="mesa-card {{ $todasBloqueadas ? 'reportada' : ($algunaReportada ? 'reportada' : 'pendiente') }}">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
                                         <h4 style="font-size: 1.25rem; font-weight: 700; color: #2d3748; margin: 0;">
                                             Mesa #{{ $mesa->numero_mesa }}
                                         </h4>
-                                        @if($mesa->resultado && $mesa->resultado->bloqueada)
-                                            <span class="badge badge-success" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-                                                🔒 Bloqueada
-                                            </span>
-                                        @elseif($mesa->resultado)
-                                            <span class="badge badge-success">✓ Reportada</span>
+                                        @if($todasBloqueadas)
+                                            <span class="badge badge-success" style="background:linear-gradient(135deg,#f97316,#ea580c);">🔒 Completa</span>
+                                        @elseif($algunaReportada)
+                                            <span class="badge badge-success">⚡ En progreso</span>
                                         @else
                                             <span class="badge badge-warning">⚠ Pendiente</span>
                                         @endif
                                     </div>
-                                    <p style="color: #718096; margin: 0;">
-                                        {{ $mesa->puesto->nombre }}
-                                    </p>
-                                    @if($mesa->resultado)
-                                        <p style="color: #48bb78; margin-top: 0.5rem; font-size: 0.875rem; margin-bottom: 0;">
-                                            <strong>Reportado:</strong> {{ $mesa->resultado->created_at->format('d/m/Y H:i') }}
-                                        </p>
-                                    @endif
-                                </div>
-                                <div>
-                                    @if($mesa->resultado && $mesa->resultado->bloqueada)
-                                        <span style="display:inline-flex;align-items:center;gap:0.4rem;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:0.5rem 1rem;border-radius:8px;font-weight:600;font-size:0.875rem;">
-                                            <svg style="width:1rem;height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                            </svg>
-                                            Enviada y bloqueada
-                                        </span>
-                                    @elseif($mesa->resultado)
-                                        <a href="{{ route('testigo.reportar', $mesa->id) }}" class="btn-ver">
-                                            <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                            Ver/Editar
-                                        </a>
-                                    @else
-                                        <a href="{{ route('testigo.reportar', $mesa->id) }}" class="btn-reportar">
-                                            <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                            </svg>
-                                            Reportar
-                                        </a>
-                                    @endif
+                                    <p style="color: #718096; margin: 0 0 0.75rem 0;">{{ $mesa->puesto->nombre }}</p>
+
+                                    {{-- Botones por elección --}}
+                                    <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                                        @foreach($elecciones as $elec)
+                                        @php
+                                            $res = $resultadosPorEleccion[$elec->id] ?? null;
+                                            $locked = $res && $res->bloqueada;
+                                        @endphp
+                                        @if($locked)
+                                            <span style="display:inline-flex;align-items:center;gap:0.3rem;background:#f0fdf4;color:#166534;border:1px solid #86efac;padding:0.35rem 0.75rem;border-radius:7px;font-size:0.78rem;font-weight:600;">
+                                                🔒 {{ $elec->nombre }}
+                                            </span>
+                                        @elseif($res)
+                                            <a href="{{ route('testigo.reportar', [$mesa->id, $elec->id]) }}"
+                                               style="display:inline-flex;align-items:center;gap:0.3rem;background:linear-gradient(135deg,#48bb78,#38a169);color:white;padding:0.35rem 0.75rem;border-radius:7px;font-size:0.78rem;font-weight:600;text-decoration:none;">
+                                                ✎ {{ $elec->nombre }}
+                                            </a>
+                                        @else
+                                            <a href="{{ route('testigo.reportar', [$mesa->id, $elec->id]) }}"
+                                               style="display:inline-flex;align-items:center;gap:0.3rem;background:{{ $elec->color }};color:white;padding:0.35rem 0.75rem;border-radius:7px;font-size:0.78rem;font-weight:600;text-decoration:none;">
+                                                + {{ $elec->nombre }}
+                                            </a>
+                                        @endif
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                         </div>

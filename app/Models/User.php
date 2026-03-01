@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->hasOne(Testigo::class);
     }
 
+    public function coordinador()
+    {
+        return $this->hasOne(Coordinador::class);
+    }
+
     /**
      * Check if user is an administrator
      */

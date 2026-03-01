@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Mesa;
 use App\Models\Testigo;
+use App\Models\Coordinador;
 use App\Models\ResultadoMesa;
 use App\Models\Candidato;
+use App\Models\Eleccion;
 use App\Models\VotoCandidato;
-use App\Jobs\ProcesarReporteMesa;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -22,104 +23,192 @@ class TestigoPortalController extends Controller
     {
         $user = auth()->user();
 
+        // Elecciones activas (necesarias para ambas vistas)
+        $elecciones = Eleccion::where('activa', true)
+            ->with(['candidatos' => fn($q) => $q->where('activo', true)->orderBy('orden')])
+            ->orderBy('fecha')
+            ->get();
+
         if ($user->isCoordinador()) {
-            // Coordinador: ve todas las mesas de todos los testigos
-            $testigos = Testigo::with(['mesas.puesto', 'mesas.resultado', 'puesto'])
-                ->orderBy('nombre')
+            $coordinador = $user->coordinador;
+
+            // Coordinador sin puesto asignado aún
+            if (!$coordinador) {
+                return view('testigo-portal.coordinador', [
+                    'mesas'           => collect(),
+                    'puesto'          => null,
+                    'totalMesas'      => 0,
+                    'mesasReportadas' => 0,
+                    'mesasPendientes' => 0,
+                    'elecciones'      => $elecciones,
+                    'votosPuesto'     => collect(),
+                ]);
+            }
+
+            $puesto = $coordinador->puesto;
+
+            // Auto-crear mesas faltantes del puesto (sin testigo asignado)
+            if ($puesto && $puesto->total_mesas > 0) {
+                $existentes = Mesa::where('puesto_id', $coordinador->fk_id_puesto)
+                    ->pluck('numero_mesa')
+                    ->toArray();
+
+                for ($n = 1; $n <= $puesto->total_mesas; $n++) {
+                    if (!in_array($n, $existentes)) {
+                        Mesa::create([
+                            'testigo_id'  => null,
+                            'puesto_id'   => $coordinador->fk_id_puesto,
+                            'numero_mesa' => $n,
+                        ]);
+                    }
+                }
+            }
+
+            // Cargar TODAS las mesas con sus resultados por elección
+            $mesas = Mesa::with(['resultados.votosCandidatos.candidato', 'testigo'])
+                ->where('puesto_id', $coordinador->fk_id_puesto)
+                ->orderBy('numero_mesa')
                 ->get();
 
-            $totalMesas      = $testigos->sum(fn($t) => $t->mesas->count());
-            $mesasReportadas = $testigos->sum(fn($t) => $t->mesas->filter(fn($m) => $m->resultado)->count());
+            $totalMesas = $mesas->count();
+            $eleccionIds = $elecciones->pluck('id');
+            // Una mesa se considera "reportada" si tiene resultado en TODAS las elecciones activas
+            $mesasReportadas = $mesas->filter(fn($m) =>
+                $eleccionIds->every(fn($eid) => $m->resultados->where('eleccion_id', $eid)->isNotEmpty())
+            )->count();
             $mesasPendientes = $totalMesas - $mesasReportadas;
 
+            // Totales de votos por candidato en el puesto del coordinador
+            $resultadoIds = $mesas->flatMap->resultados->pluck('id')->filter();
+            $votosPuesto = VotoCandidato::with('candidato')
+                ->whereIn('resultado_mesa_id', $resultadoIds)
+                ->get()
+                ->groupBy('candidato_id');
+
             return view('testigo-portal.coordinador', compact(
-                'testigos', 'totalMesas', 'mesasReportadas', 'mesasPendientes'
+                'mesas', 'puesto', 'totalMesas', 'mesasReportadas', 'mesasPendientes',
+                'elecciones', 'votosPuesto'
             ));
         }
 
         // Testigo normal: solo sus mesas
         $testigo = $user->testigo;
 
-        $mesas = Mesa::with(['puesto', 'resultado'])
+        $mesas = Mesa::with(['puesto', 'resultados'])
             ->where('testigo_id', $testigo->id)
             ->orderBy('numero_mesa')
             ->get();
 
-        $mesasReportadas = $mesas->filter(fn($mesa) => $mesa->resultado)->count();
+        $eleccionIds = $elecciones->pluck('id');
+        $mesasReportadas = $mesas->filter(fn($m) =>
+            $eleccionIds->every(fn($eid) => $m->resultados->where('eleccion_id', $eid)->isNotEmpty())
+        )->count();
         $mesasPendientes = $mesas->count() - $mesasReportadas;
 
-        return view('testigo-portal.index', compact('testigo', 'mesas', 'mesasReportadas', 'mesasPendientes'));
+        return view('testigo-portal.index', compact('testigo', 'mesas', 'mesasReportadas', 'mesasPendientes', 'elecciones'));
     }
 
     /**
-     * Mostrar formulario para reportar resultado de una mesa
+     * Mostrar formulario para reportar resultado de una mesa (por elección)
      */
-    public function reportar($mesaId)
+    public function reportar($mesaId, Eleccion $eleccion)
     {
         $user = auth()->user();
 
         if ($user->isCoordinador()) {
-            $mesa    = Mesa::with(['puesto', 'resultado.votosCandidatos.candidato', 'testigo'])
+            $coordinador = $user->coordinador;
+            $mesa = Mesa::with(['puesto', 'testigo'])
+                ->where('puesto_id', $coordinador->fk_id_puesto)
                 ->findOrFail($mesaId);
-            $testigo = $mesa->testigo;
+            $testigo = $mesa->testigo ?? null;
         } else {
             $testigo = $user->testigo;
-            $mesa    = Mesa::with(['puesto', 'resultado.votosCandidatos.candidato'])
+            $mesa    = Mesa::with(['puesto'])
                 ->where('id', $mesaId)
                 ->where('testigo_id', $testigo->id)
                 ->firstOrFail();
         }
 
-        $bloqueada = $mesa->resultado && $mesa->resultado->bloqueada;
+        // Resultado de ESTA elección para esta mesa
+        $resultado = ResultadoMesa::with('votosCandidatos')
+            ->where('mesa_id', $mesa->id)
+            ->where('eleccion_id', $eleccion->id)
+            ->first();
 
-        $candidatoPropio       = Candidato::where('tipo', 'propio')->activos()->first();
-        $candidatosCompetencia = Candidato::where('tipo', 'competencia')->activos()->get();
+        $bloqueada = $resultado && $resultado->bloqueada;
+
+        // Solo candidatos de esta elección
+        $eleccion->load(['candidatos' => fn($q) => $q->where('activo', true)->orderBy('orden')]);
 
         $votosPrevios = [];
-        if ($mesa->resultado) {
-            foreach ($mesa->resultado->votosCandidatos as $vc) {
+        if ($resultado) {
+            foreach ($resultado->votosCandidatos as $vc) {
                 $votosPrevios[$vc->candidato_id] = $vc->votos;
             }
         }
 
         return view('testigo-portal.reportar', compact(
-            'mesa', 'testigo', 'bloqueada',
-            'candidatoPropio', 'candidatosCompetencia', 'votosPrevios'
+            'mesa', 'testigo', 'bloqueada', 'resultado',
+            'eleccion', 'votosPrevios'
         ));
     }
 
     /**
-     * Guardar o actualizar el reporte de una mesa
+     * Pre-subir una imagen al directorio temporal (responde JSON con el path)
      */
-    public function guardarReporte(Request $request, $mesaId)
+    public function uploadTemp(Request $request)
+    {
+        $request->validate([
+            'imagen' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        $file       = $request->file('imagen');
+        $extension  = $file->getClientOriginalExtension();
+        $tempPath   = 'actas_temp/' . Str::uuid() . '.' . $extension;
+
+        Storage::disk('local')->put(
+            $tempPath,
+            file_get_contents($file->getRealPath())
+        );
+
+        return response()->json(['temp_path' => $tempPath]);
+    }
+
+    /**
+     * Guardar o actualizar el reporte de una mesa (por elección)
+     */
+    public function guardarReporte(Request $request, $mesaId, Eleccion $eleccion)
     {
         $user = auth()->user();
 
         if ($user->isCoordinador()) {
-            $mesa    = Mesa::with('resultado')->findOrFail($mesaId);
-            $testigo = $mesa->testigo;
+            $coordinador = $user->coordinador;
+            $mesa = Mesa::where('puesto_id', $coordinador->fk_id_puesto)->findOrFail($mesaId);
+            $testigo = $mesa->testigo ?? null;
         } else {
             $testigo = $user->testigo;
-            $mesa    = Mesa::with('resultado')
-                ->where('id', $mesaId)
+            $mesa    = Mesa::where('id', $mesaId)
                 ->where('testigo_id', $testigo->id)
                 ->firstOrFail();
         }
 
-        if ($mesa->resultado && $mesa->resultado->bloqueada) {
+        // Verificar si YA está bloqueado para esta elección
+        $resultadoExistente = ResultadoMesa::where('mesa_id', $mesa->id)
+            ->where('eleccion_id', $eleccion->id)
+            ->first();
+
+        if ($resultadoExistente && $resultadoExistente->bloqueada) {
             return redirect()
                 ->route('testigo.portal')
-                ->with('error', 'Esta mesa ya fue enviada y está bloqueada. Contacta al administrador para modificarla.');
+                ->with('error', 'El reporte de ' . $eleccion->nombre . ' para esta mesa ya fue enviado y está bloqueado.');
         }
 
         $request->validate([
-            'imagen_acta'       => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'observacion'       => 'required|string|max:1000',
             'votos_candidato.*' => 'nullable|integer|min:0',
+            'imagenes_temp'     => 'nullable|array|max:10',
+            'imagenes_temp.*'   => 'nullable|string',
         ], [
-            'imagen_acta.image'    => 'El archivo debe ser una imagen.',
-            'imagen_acta.mimes'    => 'La imagen debe ser de tipo: jpeg, png, jpg.',
-            'imagen_acta.max'      => 'La imagen no debe ser mayor a 5MB.',
             'observacion.required' => 'La observación es obligatoria.',
             'observacion.max'      => 'La observación no debe exceder 1000 caracteres.',
         ]);
@@ -127,25 +216,38 @@ class TestigoPortalController extends Controller
         try {
             $votosData = $request->input('votos_candidato', []);
 
-            $candidatoPropio      = Candidato::where('tipo', 'propio')->first();
-            $totalVotosPropio     = isset($votosData[$candidatoPropio->id])
-                ? (int) $votosData[$candidatoPropio->id]
-                : 0;
+            // Calcular totales para esta elección
+            $candidatosIds = array_keys($votosData);
+            $candidatosMap = Candidato::whereIn('id', $candidatosIds)->pluck('tipo', 'id');
 
+            $totalVotosPropio      = 0;
             $totalVotosCompetencia = 0;
             foreach ($votosData as $candidatoId => $votos) {
-                if ((int) $candidatoId !== $candidatoPropio->id) {
+                $tipo = $candidatosMap[(int) $candidatoId] ?? 'competencia';
+                if ($tipo === 'propio') {
+                    $totalVotosPropio += (int) $votos;
+                } else {
                     $totalVotosCompetencia += (int) $votos;
                 }
             }
 
-            $resultado = ResultadoMesa::firstOrNew(['mesa_id' => $mesa->id]);
-            $resultado->testigo_id        = $testigo->id;
+            $resultado = ResultadoMesa::firstOrNew([
+                'mesa_id'     => $mesa->id,
+                'eleccion_id' => $eleccion->id,
+            ]);
+
+            // Imágenes existentes a conservar / eliminar
+            $imagenesAKeep      = $request->input('imagenes_existentes', []);
+            $imagenesAnteriores = $resultado->imagen_acta ?? [];
+            $imagenesAEliminar  = array_values(array_diff($imagenesAnteriores, $imagenesAKeep));
+
+            $resultado->testigo_id        = $testigo?->id;
             $resultado->observacion       = $request->observacion;
             $resultado->total_votos       = $totalVotosPropio;
             $resultado->votos_competencia = $totalVotosCompetencia;
             $resultado->estado            = 'enviado';
             $resultado->bloqueada         = true;
+            $resultado->imagen_acta       = array_values($imagenesAKeep);
             $resultado->save();
 
             foreach ($votosData as $candidatoId => $votos) {
@@ -155,28 +257,32 @@ class TestigoPortalController extends Controller
                 );
             }
 
-            if ($request->hasFile('imagen_acta')) {
-                $extension  = $request->file('imagen_acta')->getClientOriginalExtension();
-                $nombreTemp = 'actas_temp/' . Str::uuid() . '.' . $extension;
-                Storage::disk('local')->put(
-                    $nombreTemp,
-                    file_get_contents($request->file('imagen_acta')->getRealPath())
-                );
+            // Eliminar imágenes quitadas
+            foreach ($imagenesAEliminar as $imgVieja) {
+                if ($imgVieja && Storage::disk('public')->exists($imgVieja)) {
+                    Storage::disk('public')->delete($imgVieja);
+                }
+            }
 
-                ProcesarReporteMesa::dispatch(
-                    $mesa->id,
-                    $testigo->id,
-                    $request->observacion,
-                    $totalVotosPropio,
-                    $totalVotosCompetencia,
-                    $nombreTemp,
-                    $resultado->imagen_acta,
-                );
+            // Mover nuevas imágenes de temp a public
+            $nuevasRutas = [];
+            foreach ($request->input('imagenes_temp', []) as $tempPath) {
+                if ($tempPath && Storage::disk('local')->exists($tempPath)) {
+                    $destino = 'actas/' . basename($tempPath);
+                    Storage::disk('public')->put($destino, Storage::disk('local')->get($tempPath));
+                    Storage::disk('local')->delete($tempPath);
+                    $nuevasRutas[] = $destino;
+                }
+            }
+
+            if (!empty($nuevasRutas)) {
+                $resultado->imagen_acta = array_merge($resultado->imagen_acta ?? [], $nuevasRutas);
+                $resultado->save();
             }
 
             return redirect()
                 ->route('testigo.portal')
-                ->with('success', 'Reporte enviado correctamente. Mesa #' . $mesa->numero_mesa);
+                ->with('success', 'Reporte de ' . $eleccion->nombre . ' enviado. Mesa #' . $mesa->numero_mesa);
 
         } catch (\Exception $e) {
             return back()

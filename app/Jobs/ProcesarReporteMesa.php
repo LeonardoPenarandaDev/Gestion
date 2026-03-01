@@ -15,22 +15,18 @@ class ProcesarReporteMesa implements ShouldQueue
     use Queueable, InteractsWithQueue, SerializesModels;
 
     public int $tries = 3;
-    public int $timeout = 60;
+    public int $timeout = 120;
 
     public function __construct(
         private int $mesaId,
-        private int $testigoId,
-        private string $observacion,
-        private ?int $totalVotos,
-        private ?int $votosCompetencia,
-        private ?string $imagenTempPath,
-        private ?string $imagenAnterior,
+        private ?int $testigoId,
+        private array $imagenesTempPaths,  // rutas en disco local (actas_temp/uuid.ext)
+        private array $imagenesEliminar,   // rutas en disco public a borrar
     ) {}
 
     public function handle(): void
     {
-        // El job solo procesa la imagen — los datos ya fueron guardados síncronamente
-        if (!$this->imagenTempPath) {
+        if (empty($this->imagenesTempPaths) && empty($this->imagenesEliminar)) {
             return;
         }
 
@@ -39,18 +35,28 @@ class ProcesarReporteMesa implements ShouldQueue
             return;
         }
 
-        // Eliminar imagen anterior si existe
-        if ($this->imagenAnterior && Storage::disk('public')->exists($this->imagenAnterior)) {
-            Storage::disk('public')->delete($this->imagenAnterior);
+        // Eliminar imágenes que el usuario quitó
+        foreach ($this->imagenesEliminar as $imgVieja) {
+            if ($imgVieja && Storage::disk('public')->exists($imgVieja)) {
+                Storage::disk('public')->delete($imgVieja);
+            }
         }
 
-        // Mover imagen de temp a destino final
-        if (Storage::disk('local')->exists($this->imagenTempPath)) {
-            $contenido = Storage::disk('local')->get($this->imagenTempPath);
-            $destino   = 'actas/' . basename($this->imagenTempPath);
-            Storage::disk('public')->put($destino, $contenido);
-            Storage::disk('local')->delete($this->imagenTempPath);
-            $resultado->imagen_acta = $destino;
+        // Mover nuevas imágenes de temp a public
+        $nuevasRutas = [];
+        foreach ($this->imagenesTempPaths as $tempPath) {
+            if ($tempPath && Storage::disk('local')->exists($tempPath)) {
+                $contenido = Storage::disk('local')->get($tempPath);
+                $destino   = 'actas/' . basename($tempPath);
+                Storage::disk('public')->put($destino, $contenido);
+                Storage::disk('local')->delete($tempPath);
+                $nuevasRutas[] = $destino;
+            }
+        }
+
+        if (!empty($nuevasRutas)) {
+            $imagenesActuales = $resultado->imagen_acta ?? [];
+            $resultado->imagen_acta = array_merge($imagenesActuales, $nuevasRutas);
             $resultado->save();
         }
     }
@@ -58,13 +64,15 @@ class ProcesarReporteMesa implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         Log::error('Error procesando reporte de mesa', [
-            'mesa_id'   => $this->mesaId,
-            'error'     => $exception->getMessage(),
+            'mesa_id' => $this->mesaId,
+            'error'   => $exception->getMessage(),
         ]);
 
-        // Limpiar imagen temp si quedó huérfana
-        if ($this->imagenTempPath && Storage::disk('local')->exists($this->imagenTempPath)) {
-            Storage::disk('local')->delete($this->imagenTempPath);
+        // Limpiar archivos temp huérfanos
+        foreach ($this->imagenesTempPaths as $tempPath) {
+            if ($tempPath && Storage::disk('local')->exists($tempPath)) {
+                Storage::disk('local')->delete($tempPath);
+            }
         }
     }
 }

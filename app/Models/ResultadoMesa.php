@@ -10,6 +10,7 @@ class ResultadoMesa extends Model
 
     protected $fillable = [
         'mesa_id',
+        'eleccion_id',
         'testigo_id',
         'imagen_acta',
         'observacion',
@@ -20,6 +21,7 @@ class ResultadoMesa extends Model
     ];
 
     protected $casts = [
+        'imagen_acta'       => 'array',
         'total_votos'       => 'integer',
         'votos_competencia' => 'integer',
         'bloqueada'         => 'boolean',
@@ -28,6 +30,11 @@ class ResultadoMesa extends Model
     public function mesa()
     {
         return $this->belongsTo(Mesa::class);
+    }
+
+    public function eleccion()
+    {
+        return $this->belongsTo(Eleccion::class);
     }
 
     public function testigo()

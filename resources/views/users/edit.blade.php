@@ -343,6 +343,7 @@
                                     <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Administrador</option>
                                     <option value="coordinador" {{ old('role', $user->role) == 'coordinador' ? 'selected' : '' }}>Coordinador</option>
                                     <option value="testigo" {{ old('role', $user->role) == 'testigo' ? 'selected' : '' }}>Testigo</option>
+                                    <option value="visor" {{ old('role', $user->role) == 'visor' ? 'selected' : '' }}>Visor (Panel TV)</option>
                                 </select>
                                 @error('role')
                                     <p class="form-error">{{ $message }}</p>

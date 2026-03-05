@@ -14,7 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->alias([
             'check_permission' => \App\Http\Middleware\CheckPermission::class,
-            'admin_only' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'admin_only'       => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'not_visor'        => \App\Http\Middleware\EnsureNotVisor::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -11,6 +11,7 @@ use App\Models\Mesa;
 use App\Models\ResultadoMesa;
 use App\Models\Candidato;
 use App\Models\Eleccion;
+use App\Models\Coordinador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -38,8 +39,8 @@ class DashboardController extends Controller
         // Total de mesas disponibles (suma del campo total_mesas de la tabla puestos)
         $totalMesas = Puesto::sum('total_mesas') ?? 0;
 
-        // Mesas cubiertas/asignadas a testigos
-        $mesasCubiertas = Mesa::count();
+        // Mesas cubiertas: puestos con coordinador + mesas de testigos en puestos sin coordinador
+        $mesasCubiertas = $this->_mesasCubiertas();
 
         $totalTestigos = Testigo::count();
         $totalCoordinadores = InfoElectoral::coordinadores()->count();
@@ -74,10 +75,12 @@ class DashboardController extends Controller
                 $eleccion->votos_propio      = (int) ($resumen['propio']->total_votos      ?? 0);
                 $eleccion->votos_competencia = (int) ($resumen['competencia']->total_votos ?? 0);
                 $eleccion->candidatos_count  = $eleccion->candidatos()->where('activo', true)->count();
+                $eleccion->mesas_reportadas_elec = ResultadoMesa::where('eleccion_id', $eleccion->id)
+                    ->distinct('mesa_id')->count('mesa_id');
                 return $eleccion;
             });
 
-        // Últimos reportes agrupados por elección
+        // Últimos reportes agrupados por elección (todas, incluso sin reportes aún)
         $ultimosReportesPorEleccion = Eleccion::orderBy('fecha')
             ->get()
             ->map(function ($eleccion) {
@@ -88,8 +91,7 @@ class DashboardController extends Controller
                     ->get();
                 $eleccion->ultimosReportes = $reportes;
                 return $eleccion;
-            })
-            ->filter(fn($e) => $e->ultimosReportes->isNotEmpty());
+            });
 
         // Compatibilidad: $ultimosReportes = todos juntos para el contador
         $ultimosReportes = ResultadoMesa::with(['mesa.puesto', 'testigo', 'eleccion'])
@@ -116,23 +118,49 @@ class DashboardController extends Controller
             ->orderByDesc('total_votos')
             ->get();
 
-        // Votos por mesa (todas las mesas con sus votos)
-        $votosPorMesa = DB::table('mesas')
-            ->join('puesto', 'mesas.puesto_id', '=', 'puesto.id')
+        // Mesas reportadas y votos por puesto desglosados por elección
+        $votosPorMesaElec = DB::table('mesas')
+            ->join('resultados_mesas', 'mesas.id', '=', 'resultados_mesas.mesa_id')
+            ->select(
+                'mesas.puesto_id',
+                'resultados_mesas.eleccion_id',
+                DB::raw('COUNT(DISTINCT resultados_mesas.mesa_id) as mesas_reportadas'),
+                DB::raw('COALESCE(SUM(resultados_mesas.total_votos), 0) as total_votos'),
+                DB::raw('COALESCE(SUM(resultados_mesas.votos_competencia), 0) as votos_competencia')
+            )
+            ->groupBy('mesas.puesto_id', 'resultados_mesas.eleccion_id')
+            ->get()
+            ->groupBy('puesto_id')
+            ->map(fn($rows) => $rows->keyBy('eleccion_id'));
+
+        // Votos por puesto (TODAS las mesas: base = puesto.total_mesas, no tabla mesas)
+        $votosPorMesa = DB::table('puesto')
+            ->leftJoin('coordinadores', 'puesto.id', '=', 'coordinadores.fk_id_puesto')
+            ->leftJoin('mesas', 'puesto.id', '=', 'mesas.puesto_id')
             ->leftJoin('resultados_mesas', 'mesas.id', '=', 'resultados_mesas.mesa_id')
             ->select(
-                'mesas.id',
-                'mesas.numero_mesa',
+                'puesto.id',
                 'puesto.nombre as puesto_nombre',
                 'puesto.zona',
-                DB::raw('COALESCE(resultados_mesas.total_votos, 0) as total_votos'),
-                DB::raw('COALESCE(resultados_mesas.votos_competencia, 0) as votos_competencia'),
-                DB::raw('CASE WHEN resultados_mesas.id IS NOT NULL THEN 1 ELSE 0 END as tiene_reporte')
+                'puesto.municipio_nombre',
+                'puesto.total_mesas',
+                DB::raw('COUNT(DISTINCT coordinadores.id) as num_coordinadores'),
+                DB::raw('COUNT(DISTINCT resultados_mesas.mesa_id) as mesas_reportadas'),
+                DB::raw('COALESCE(SUM(resultados_mesas.total_votos), 0) as total_votos'),
+                DB::raw('COALESCE(SUM(resultados_mesas.votos_competencia), 0) as votos_competencia')
             )
-            ->orderBy('puesto.zona')
+            ->groupBy('puesto.id', 'puesto.nombre', 'puesto.zona', 'puesto.municipio_nombre', 'puesto.total_mesas')
+            ->orderBy('puesto.municipio_nombre')
             ->orderBy('puesto.nombre')
-            ->orderBy('mesas.numero_mesa')
-            ->get();
+            ->get()
+            ->map(function ($p) use ($votosPorMesaElec) {
+                $p->tiene_reporte    = $p->mesas_reportadas > 0 ? 1 : 0;
+                $p->pct_reportado    = $p->total_mesas > 0
+                    ? round($p->mesas_reportadas / $p->total_mesas * 100) : 0;
+                $p->tiene_cobertura  = $p->num_coordinadores > 0 || $p->mesas_reportadas > 0;
+                $p->por_eleccion     = $votosPorMesaElec[$p->id] ?? collect();
+                return $p;
+            });
 
         // Personas por estado
         $personasPorEstado = Persona::selectRaw('estado, COUNT(*) as total')
@@ -497,7 +525,7 @@ class DashboardController extends Controller
         
         // Mesas
         $totalMesas = Puesto::sum('total_mesas') ?? 0;
-        $mesasCubiertas = Mesa::count();
+        $mesasCubiertas = $this->_mesasCubiertas();
         $mesasSinReportar = $mesasCubiertas - $mesasReportadas;
         
         // Últimos reportes
@@ -569,5 +597,148 @@ class DashboardController extends Controller
             'municipiosDestacados' => $municipiosDestacados,
             'timestamp' => now()->timestamp,
         ]);
+    }
+
+    /**
+     * Panel visor para TV/pantalla en tiempo real
+     */
+    public function visor()
+    {
+        $elecciones = $this->_eleccionesConVotos();
+        $totalTestigos  = Testigo::count();
+        $totalPuestos   = Puesto::count();
+        $totalMesas     = Puesto::sum('total_mesas') ?? 0;
+        $mesasCubiertas = $this->_mesasCubiertas();
+        $mesasReportadas = ResultadoMesa::distinct('mesa_id')->count('mesa_id');
+
+        $ultimosReportes = ResultadoMesa::with(['mesa.puesto', 'eleccion'])
+            ->latest()->take(20)->get();
+
+        $ultimosReportesPorEleccion = Eleccion::orderBy('fecha')->get()->map(function ($eleccion) {
+            $eleccion->ultimosReportes = ResultadoMesa::with(['mesa.puesto'])
+                ->where('eleccion_id', $eleccion->id)
+                ->latest()->take(10)->get();
+            return $eleccion;
+        });
+
+        return view('visor', compact(
+            'elecciones',
+            'totalTestigos', 'totalPuestos', 'totalMesas',
+            'mesasCubiertas', 'mesasReportadas',
+            'ultimosReportes', 'ultimosReportesPorEleccion'
+        ));
+    }
+
+    /**
+     * JSON para el polling del visor (cada 20s)
+     */
+    public function visorData()
+    {
+        $mesasCubiertas = $this->_mesasCubiertas();
+
+        $elecciones = $this->_eleccionesConVotos()->map(fn($e) => [
+            'id'                  => $e->id,
+            'nombre'              => $e->nombre,
+            'color'               => $e->color,
+            'votos_propio'        => $e->votos_propio,
+            'votos_competencia'   => $e->votos_competencia,
+            'mesas_reportadas'    => $e->mesas_reportadas_elec,
+            'mesas_cubiertas'     => $mesasCubiertas,
+            'candidatos'          => $e->candidatos_ranking->map(fn($c) => [
+                'id'          => $c->id,
+                'nombre'      => $c->nombre,
+                'tipo'        => $c->tipo,
+                'total_votos' => (int) $c->total_votos,
+            ])->values(),
+        ]);
+
+        $ultimosReportes = ResultadoMesa::with(['mesa.puesto', 'eleccion'])
+            ->latest()->take(20)->get()->map(fn($r) => [
+                'mesa'           => $r->mesa->numero_mesa ?? '?',
+                'puesto'         => $r->mesa?->puesto?->nombre ?? '—',
+                'municipio'      => $r->mesa?->puesto?->municipio_nombre ?? '',
+                'eleccion_nombre'=> $r->eleccion?->nombre ?? '—',
+                'eleccion_color' => $r->eleccion?->color ?? '#667eea',
+                'total_votos'    => (int) ($r->total_votos ?? 0),
+                'tiene_foto'     => !empty($r->imagen_acta),
+                'tiempo'         => $r->updated_at->diffForHumans(),
+            ]);
+
+        $reportesPorEleccion = Eleccion::orderBy('fecha')->get()->map(fn($elec) => [
+            'id'     => $elec->id,
+            'nombre' => $elec->nombre,
+            'color'  => $elec->color,
+            'tipo_cargo' => $elec->tipo_cargo,
+            'fecha'  => $elec->fecha?->format('d/m/Y'),
+            'reportes' => ResultadoMesa::with(['mesa.puesto'])
+                ->where('eleccion_id', $elec->id)
+                ->latest()->take(10)->get()
+                ->map(fn($r) => [
+                    'mesa'       => $r->mesa->numero_mesa ?? '?',
+                    'puesto'     => $r->mesa?->puesto?->nombre ?? '—',
+                    'testigo'    => 'N/A',
+                    'total_votos'=> (int)($r->total_votos ?? 0),
+                    'imagen_acta'=> $r->imagen_acta ?? [],
+                    'fecha'      => $r->created_at->format('d/m/Y H:i'),
+                ])->values(),
+        ]);
+
+        return response()->json([
+            'elecciones'          => $elecciones,
+            'mesasCubiertas'      => $mesasCubiertas,
+            'mesasReportadas'     => ResultadoMesa::distinct('mesa_id')->count('mesa_id'),
+            'totalMesas'          => Puesto::sum('total_mesas') ?? 0,
+            'totalTestigos'       => Testigo::count(),
+            'totalPuestos'        => Puesto::count(),
+            'ultimosReportes'     => $ultimosReportes,
+            'reportesPorEleccion' => $reportesPorEleccion,
+            'hora'                => now()->format('H:i:s'),
+        ]);
+    }
+
+    /**
+     * Helper: mesas cubiertas = mesas en puestos con coordinador
+     *         + mesas de testigos en puestos SIN coordinador
+     */
+    private function _mesasCubiertas(): int
+    {
+        $puestosConCoord = Coordinador::distinct()->pluck('fk_id_puesto');
+        return (int) Puesto::whereIn('id', $puestosConCoord)->sum('total_mesas')
+             + Mesa::whereNotIn('puesto_id', $puestosConCoord)->count();
+    }
+
+    /** Helper interno: elecciones con votos, ranking de candidatos y mesas_reportadas_elec */
+    private function _eleccionesConVotos()
+    {
+        return Eleccion::orderBy('fecha')->get()->map(function ($eleccion) {
+            // Totales por tipo
+            $resumen = DB::table('candidatos')
+                ->leftJoin('votos_candidatos', 'candidatos.id', '=', 'votos_candidatos.candidato_id')
+                ->where('candidatos.eleccion_id', $eleccion->id)
+                ->select('candidatos.tipo', DB::raw('COALESCE(SUM(votos_candidatos.votos), 0) as total_votos'))
+                ->groupBy('candidatos.tipo')->get()->keyBy('tipo');
+
+            $eleccion->votos_propio          = (int) ($resumen['propio']->total_votos      ?? 0);
+            $eleccion->votos_competencia     = (int) ($resumen['competencia']->total_votos ?? 0);
+            $eleccion->mesas_reportadas_elec = ResultadoMesa::where('eleccion_id', $eleccion->id)
+                ->distinct('mesa_id')->count('mesa_id');
+
+            // Ranking completo de candidatos con sus votos
+            $eleccion->candidatos_ranking = DB::table('candidatos')
+                ->leftJoin('votos_candidatos', 'candidatos.id', '=', 'votos_candidatos.candidato_id')
+                ->where('candidatos.eleccion_id', $eleccion->id)
+                ->where('candidatos.activo', true)
+                ->select(
+                    'candidatos.id',
+                    'candidatos.nombre',
+                    'candidatos.tipo',
+                    DB::raw('COALESCE(SUM(votos_candidatos.votos), 0) as total_votos')
+                )
+                ->groupBy('candidatos.id', 'candidatos.nombre', 'candidatos.tipo')
+                ->orderByDesc('total_votos')
+                ->get();
+
+            return $eleccion;
+        });
     }
 }

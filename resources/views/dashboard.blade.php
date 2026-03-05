@@ -467,7 +467,55 @@
                     </div>
                 </div>
 
-                <!-- Gráfico de Cobertura de Mesas -->
+
+
+                <!-- Gráfico de Progreso de Reportes por Elección -->
+                @foreach($elecciones as $elec)
+                @php
+                    $elecRepCount  = $elec->mesas_reportadas_elec ?? 0;
+                    $elecSinRep    = max(0, $mesasCubiertas - $elecRepCount);
+                    $elecPct       = $mesasCubiertas > 0 ? round(($elecRepCount / $mesasCubiertas) * 100) : 0;
+                    $elecColor     = $elec->color ?? '#8b5cf6';
+                @endphp
+                <div class="modern-card" style="padding: 1.5rem;">
+                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="20" height="20" fill="none" stroke="{{ $elecColor }}" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Progreso de Reportes E14 — {{ $elec->nombre }}
+                    </h3>
+                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <div style="width: 140px; height: 140px;">
+                            <canvas id="chartProgreso_{{ $elec->id }}"></canvas>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span style="font-size: 0.85rem; color: #374151;">Reportadas</span>
+                                    <span style="font-size: 0.85rem; font-weight: 600; color: #10b981;">{{ $elecRepCount }}</span>
+                                </div>
+                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: {{ $elecPct }}%;"></div>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span style="font-size: 0.85rem; color: #374151;">Sin Reportar</span>
+                                    <span style="font-size: 0.85rem; font-weight: 600; color: #ef4444;">{{ $elecSinRep }}</span>
+                                </div>
+                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #ef4444, #dc2626); width: {{ 100 - $elecPct }}%;"></div>
+                                </div>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: #faf5ff; border-radius: 8px; margin-top: 0.5rem;">
+                                <span style="font-size: 1.2rem; font-weight: 700; color: {{ $elecColor }};">{{ $elecPct }}%</span>
+                                <span style="font-size: 0.75rem; color: #8b5cf6; display: block;">Reportado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+                                <!-- Gráfico de Cobertura de Mesas -->
                 <div class="modern-card" style="padding: 1.5rem;">
                     <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
                         <svg width="20" height="20" fill="none" stroke="#10b981" viewBox="0 0 24 24" stroke-width="2">
@@ -506,45 +554,6 @@
                     </div>
                 </div>
 
-                <!-- Gráfico de Progreso de Reportes -->
-                <div class="modern-card" style="padding: 1.5rem;">
-                    <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg width="20" height="20" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        Progreso de Reportes E14
-                    </h3>
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <div style="width: 140px; height: 140px;">
-                            <canvas id="chartProgresoReportes"></canvas>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <span style="font-size: 0.85rem; color: #374151;">Reportadas</span>
-                                    <span id="mesasReportadas2" style="font-size: 0.85rem; font-weight: 600; color: #10b981;">{{ $mesasReportadas ?? 0 }}</span>
-                                </div>
-                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: {{ $mesasCubiertas > 0 ? round(($mesasReportadas / $mesasCubiertas) * 100) : 0 }}%;"></div>
-                                </div>
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <span style="font-size: 0.85rem; color: #374151;">Sin Reportar</span>
-                                    <span id="mesasSinReportar" style="font-size: 0.85rem; font-weight: 600; color: #ef4444;">{{ $mesasSinReportar ?? 0 }}</span>
-                                </div>
-                                <div style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                                    <div style="height: 100%; background: linear-gradient(90deg, #ef4444, #dc2626); width: {{ $mesasCubiertas > 0 ? round(($mesasSinReportar / $mesasCubiertas) * 100) : 0 }}%;"></div>
-                                </div>
-                            </div>
-                            <div style="text-align: center; padding: 0.5rem; background: #faf5ff; border-radius: 8px; margin-top: 0.5rem;">
-                                <span style="font-size: 1.2rem; font-weight: 700; color: #7c3aed;">{{ $mesasCubiertas > 0 ? round(($mesasReportadas / $mesasCubiertas) * 100) : 0 }}%</span>
-                                <span style="font-size: 0.75rem; color: #8b5cf6; display: block;">Reportado</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Gráfico de Distribución por Zona -->
                 @if(isset($puestosPorZona) && $puestosPorZona->count() > 0)
                 <div class="modern-card" style="padding: 1.5rem;">
@@ -575,7 +584,7 @@
                 </div>
                 @endif
 
-                <!-- Puestos con más Testigos Asignados -->
+                <!-- Puestos con más Testigos Asignados 
                 @if(isset($puestosConMasTestigos) && $puestosConMasTestigos->count() > 0)
                 <div class="modern-card" style="padding: 1.5rem;">
                     <h3 style="color: #374151; font-size: 1.1rem; font-weight: 600; margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
@@ -603,7 +612,7 @@
                         @endforeach
                     </div>
                 </div>
-                @endif
+                @endif-->
 
                 <!-- Resumen de Asignación de Mesas -->
                 <div class="modern-card" style="padding: 1.5rem;">
@@ -687,8 +696,8 @@
                     </div>
                 </div>-->
 
-                <!-- Últimos Reportes E14 — separados por elección -->
-                @if(isset($ultimosReportesPorEleccion) && $ultimosReportesPorEleccion->isNotEmpty())
+                <!-- Últimos Reportes E14 — una sección por cada elección activa -->
+                @if(isset($ultimosReportesPorEleccion))
                 @foreach($ultimosReportesPorEleccion as $eleccionReporte)
                 <div class="modern-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden;">
                     <div style="background: {{ $eleccionReporte->color }}; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
@@ -703,10 +712,18 @@
                         </div>
                         <div style="background: rgba(255,255,255,0.2); padding: 0.4rem 0.9rem; border-radius: 8px;">
                             <span style="color: white; font-weight: 600; font-size: 0.875rem;">
-                                <span id="totalReportes">{{ $eleccionReporte->ultimosReportes->count() }}</span> reportes
+                                {{ $eleccionReporte->ultimosReportes->count() }} reportes
                             </span>
                         </div>
                     </div>
+                    @if($eleccionReporte->ultimosReportes->isEmpty())
+                        <div style="padding: 2.5rem; text-align: center; color: #9ca3af;">
+                            <svg width="36" height="36" fill="none" stroke="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" style="margin: 0 auto 0.75rem; display:block;">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            <p style="font-size: 0.875rem; margin: 0;">Sin reportes aún para {{ $eleccionReporte->nombre }}</p>
+                        </div>
+                    @else
                     <div style="overflow-x: auto;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
@@ -763,6 +780,7 @@
                             </tbody>
                         </table>
                     </div>
+                    @endif
                 </div>
                 @endforeach
                 @endif
@@ -844,68 +862,108 @@
                 </div>
                 @endif
 
-                <!-- Votos por Mesa -->
+                <!-- Estado de Mesas por Puesto (todos los puestos, separado por elección) -->
                 @if(isset($votosPorMesa) && $votosPorMesa->count() > 0)
+                @php
+                    $puestosConReporte = $votosPorMesa->where('tiene_reporte', 1)->count();
+                    $puestosSinReporte = $votosPorMesa->where('tiene_reporte', 0)->count();
+                    $totalMesasFisicas = $votosPorMesa->sum('total_mesas');
+                    $totalMesasRep     = $votosPorMesa->sum('mesas_reportadas');
+                    // Totales por elección
+                    $totalPorElec = [];
+                    foreach ($elecciones as $elec) {
+                        $totalPorElec[$elec->id] = [
+                            'mesas_rep' => $votosPorMesa->sum(fn($p) => (int)($p->por_eleccion[$elec->id]->mesas_reportadas ?? 0)),
+                            'nuestros'  => $votosPorMesa->sum(fn($p) => (int)($p->por_eleccion[$elec->id]->total_votos ?? 0)),
+                            'comp'      => $votosPorMesa->sum(fn($p) => (int)($p->por_eleccion[$elec->id]->votos_competencia ?? 0)),
+                        ];
+                    }
+                @endphp
                 <div class="modern-card" style="grid-column: 1 / -1; padding: 0; overflow: hidden;">
                     <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin: 0;">Votos por Mesa</h3>
-                            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin: 0.25rem 0 0 0;">Detalle de votos reportados por cada mesa</p>
+                            <h3 style="color: white; font-size: 1.25rem; font-weight: 700; margin: 0;">Estado de Mesas por Puesto</h3>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin: 0.25rem 0 0 0;">
+                                {{ number_format($totalMesasFisicas) }} mesas físicas · {{ number_format($votosPorMesa->count()) }} puestos
+                            </p>
                         </div>
-                        <div style="display: flex; gap: 1rem;">
-                            <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px;">
-                                <span style="color: white; font-weight: 600;">{{ $votosPorMesa->where('tiene_reporte', 1)->count() }} con reporte</span>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <div style="background: rgba(255,255,255,0.2); padding: 0.4rem 0.9rem; border-radius: 8px;">
+                                <span style="color: white; font-weight: 600; font-size: 0.85rem;">{{ number_format($totalMesasRep) }} mesas reportadas</span>
                             </div>
-                            <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 8px;">
-                                <span style="color: white; font-weight: 600;">{{ $votosPorMesa->where('tiene_reporte', 0)->count() }} sin reporte</span>
+                            <div style="background: rgba(255,255,255,0.2); padding: 0.4rem 0.9rem; border-radius: 8px;">
+                                <span style="color: white; font-weight: 600; font-size: 0.85rem;">{{ $puestosConReporte }} puestos con reporte</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 0.4rem 0.9rem; border-radius: 8px;">
+                                <span style="color: white; font-weight: 600; font-size: 0.85rem;">{{ $puestosSinReporte }} sin reporte</span>
                             </div>
                         </div>
                     </div>
-                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                    <div style="overflow-x: auto; max-height: 450px; overflow-y: auto;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead style="position: sticky; top: 0; z-index: 10;">
+                                <!-- Fila 1: encabezados de elección agrupados -->
+                                <tr style="background: #f3f4f6;">
+                                    <th rowspan="2" style="padding: 0.6rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; font-size:0.82rem; vertical-align: bottom;">Municipio</th>
+                                    <th rowspan="2" style="padding: 0.6rem 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; font-size:0.82rem; vertical-align: bottom;">Puesto</th>
+                                    <th rowspan="2" style="padding: 0.6rem 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; font-size:0.82rem; vertical-align: bottom;">Total</th>
+                                    @foreach($elecciones as $elec)
+                                    <th colspan="3" style="padding: 0.45rem 0.6rem; text-align: center; font-weight: 700; color: white; background: {{ $elec->color ?? '#667eea' }}; font-size:0.78rem; border-left: 3px solid #fff;">
+                                        {{ $elec->nombre }}
+                                    </th>
+                                    @endforeach
+                                    <th rowspan="2" style="padding: 0.6rem 0.75rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; font-size:0.82rem; border-left: 2px solid #e5e7eb; vertical-align: bottom;">Cobertura</th>
+                                </tr>
+                                <!-- Fila 2: sub-columnas por elección -->
                                 <tr style="background: #f9fafb;">
-                                    <th style="padding: 1rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Puesto</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Mesa</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #16a34a; border-bottom: 1px solid #e5e7eb;">Candidato</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #dc2626; border-bottom: 1px solid #e5e7eb;">Competencia</th>
-                                    <th style="padding: 1rem; text-align: center; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb;">Estado</th>
+                                    @foreach($elecciones as $elec)
+                                    <th style="padding: 0.35rem 0.5rem; text-align: center; font-weight: 600; color: #4b5563; border-bottom: 1px solid #e5e7eb; font-size:0.73rem; border-left: 3px solid #e5e7eb;">Rep.</th>
+                                    <th style="padding: 0.35rem 0.5rem; text-align: center; font-weight: 600; color: #166534; border-bottom: 1px solid #e5e7eb; font-size:0.73rem;">Nuestros</th>
+                                    <th style="padding: 0.35rem 0.5rem; text-align: center; font-weight: 600; color: #991b1b; border-bottom: 1px solid #e5e7eb; font-size:0.73rem;">Comp.</th>
+                                    @endforeach
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($votosPorMesa as $mesa)
-                                <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s; {{ $mesa->tiene_reporte ? '' : 'opacity: 0.7;' }}" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
-                                    <td style="padding: 0.75rem 1rem; color: #374151; font-size: 0.875rem;">{{ $mesa->puesto_nombre }}</td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 600; font-size: 0.8rem;">
-                                            #{{ $mesa->numero_mesa }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($mesa->tiene_reporte)
-                                            <span style="background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700;">
-                                                {{ number_format($mesa->total_votos) }}
-                                            </span>
+                                @foreach($votosPorMesa as $p)
+                                <tr style="border-bottom: 1px solid #f3f4f6; transition: background 0.2s;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='white'">
+                                    <td style="padding: 0.55rem 1rem; color: #6b7280; font-size: 0.8rem;">{{ $p->municipio_nombre ?? '—' }}</td>
+                                    <td style="padding: 0.55rem 1rem; color: #374151; font-size: 0.82rem; font-weight: 500;">{{ $p->puesto_nombre }}</td>
+                                    <td style="padding: 0.55rem 1rem; text-align: center; font-size: 0.82rem; font-weight: 700; color: #374151;">{{ $p->total_mesas }}</td>
+                                    @foreach($elecciones as $elec)
+                                    @php $pe = $p->por_eleccion[$elec->id] ?? null; @endphp
+                                    <td style="padding: 0.55rem 0.5rem; text-align: center; border-left: 3px solid #f3f4f6;">
+                                        @if($pe && $pe->mesas_reportadas > 0)
+                                            <span style="background:#dbeafe;color:#1d4ed8;padding:0.1rem 0.4rem;border-radius:8px;font-weight:700;font-size:0.75rem;">{{ $pe->mesas_reportadas }}</span>
                                         @else
-                                            <span style="color: #9ca3af;">-</span>
+                                            <span style="color:#d1d5db;font-size:0.73rem;">0</span>
                                         @endif
                                     </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($mesa->tiene_reporte)
-                                            <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 12px; font-weight: 700;">
-                                                {{ number_format($mesa->votos_competencia) }}
-                                            </span>
+                                    <td style="padding: 0.55rem 0.5rem; text-align: center;">
+                                        @if($pe && $pe->total_votos > 0)
+                                            <span style="background:#dcfce7;color:#166534;padding:0.1rem 0.4rem;border-radius:8px;font-weight:700;font-size:0.75rem;">{{ number_format($pe->total_votos) }}</span>
                                         @else
-                                            <span style="color: #9ca3af;">-</span>
+                                            <span style="color:#d1d5db;font-size:0.73rem;">—</span>
                                         @endif
                                     </td>
-                                    <td style="padding: 0.75rem 1rem; text-align: center;">
-                                        @if($mesa->tiene_reporte)
-                                            <span style="background: #dcfce7; color: #166534; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
-                                                Reportada
+                                    <td style="padding: 0.55rem 0.5rem; text-align: center;">
+                                        @if($pe && $pe->votos_competencia > 0)
+                                            <span style="background:#fee2e2;color:#991b1b;padding:0.1rem 0.4rem;border-radius:8px;font-weight:700;font-size:0.75rem;">{{ number_format($pe->votos_competencia) }}</span>
+                                        @else
+                                            <span style="color:#d1d5db;font-size:0.73rem;">—</span>
+                                        @endif
+                                    </td>
+                                    @endforeach
+                                    <td style="padding: 0.55rem 0.75rem; text-align: center; border-left: 2px solid #f3f4f6;">
+                                        @if($p->tiene_reporte)
+                                            <span style="background:#dcfce7;color:#166534;padding:0.15rem 0.55rem;border-radius:10px;font-size:0.72rem;font-weight:600;">
+                                                {{ $p->mesas_reportadas == $p->total_mesas ? 'Completo' : 'Parcial' }}
+                                            </span>
+                                        @elseif($p->num_coordinadores > 0)
+                                            <span style="background:#dbeafe;color:#1d4ed8;padding:0.15rem 0.55rem;border-radius:10px;font-size:0.72rem;font-weight:600;">
+                                                Con coord.
                                             </span>
                                         @else
-                                            <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
+                                            <span style="background:#fee2e2;color:#991b1b;padding:0.15rem 0.55rem;border-radius:10px;font-size:0.72rem;font-weight:600;">
                                                 Pendiente
                                             </span>
                                         @endif
@@ -914,14 +972,14 @@
                                 @endforeach
                             </tbody>
                             <tfoot style="position: sticky; bottom: 0;">
-                                @php
-                                    $totalCandidatoMesa = $votosPorMesa->sum('total_votos');
-                                    $totalCompetenciaMesa = $votosPorMesa->sum('votos_competencia');
-                                @endphp
                                 <tr style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); font-weight: 700;">
-                                    <td colspan="2" style="padding: 1rem; color: #92400e;">TOTAL VOTOS</td>
-                                    <td style="padding: 1rem; text-align: center; color: #166534; font-size: 1.1rem;">{{ number_format($totalCandidatoMesa) }}</td>
-                                    <td style="padding: 1rem; text-align: center; color: #991b1b; font-size: 1.1rem;">{{ number_format($totalCompetenciaMesa) }}</td>
+                                    <td colspan="2" style="padding: 0.85rem 1rem; color: #92400e; font-size: 0.85rem;">TOTALES</td>
+                                    <td style="padding: 0.85rem 1rem; text-align: center; color: #374151;">{{ number_format($totalMesasFisicas) }}</td>
+                                    @foreach($elecciones as $elec)
+                                    <td style="padding: 0.85rem 0.5rem; text-align: center; color: #1d4ed8; border-left: 3px solid rgba(0,0,0,0.08);">{{ number_format($totalPorElec[$elec->id]['mesas_rep']) }}</td>
+                                    <td style="padding: 0.85rem 0.5rem; text-align: center; color: #166534;">{{ number_format($totalPorElec[$elec->id]['nuestros']) }}</td>
+                                    <td style="padding: 0.85rem 0.5rem; text-align: center; color: #991b1b;">{{ number_format($totalPorElec[$elec->id]['comp']) }}</td>
+                                    @endforeach
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -1063,29 +1121,36 @@
                 });
             }
 
-            // Gráfico de Progreso de Reportes (Dona)
-            const ctxProgreso = document.getElementById('chartProgresoReportes');
-            if (ctxProgreso) {
-                new Chart(ctxProgreso, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Reportadas', 'Sin Reportar'],
-                        datasets: [{
-                            data: [{{ $mesasReportadas ?? 0 }}, {{ $mesasSinReportar ?? 0 }}],
-                            backgroundColor: [chartColors.green, chartColors.red],
-                            borderWidth: 0,
-                            cutout: '70%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: { display: false }
+            // Gráfico de Progreso de Reportes (Dona) — uno por elección
+            @foreach($elecciones as $elec)
+            @php
+                $elecRepCount = $elec->mesas_reportadas_elec ?? 0;
+                $elecSinRep   = max(0, $mesasCubiertas - $elecRepCount);
+            @endphp
+            (function() {
+                const ctx = document.getElementById('chartProgreso_{{ $elec->id }}');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Reportadas', 'Sin Reportar'],
+                            datasets: [{
+                                data: [{{ $elecRepCount }}, {{ $elecSinRep }}],
+                                backgroundColor: ['{{ $elec->color ?? "#667eea" }}', chartColors.gray],
+                                borderWidth: 0,
+                                cutout: '70%'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { display: false } }
                         }
-                    }
-                });
-            }
+                    });
+                }
+            })();
+            @endforeach
+
 
             // Gráfico Comparativo de Votos (Candidato vs Competencia)
             const ctxComparativo = document.getElementById('chartComparativoVotos');

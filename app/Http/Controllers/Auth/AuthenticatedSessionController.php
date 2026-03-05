@@ -31,6 +31,10 @@ class AuthenticatedSessionController extends Controller
         // Redirigir según el rol del usuario
         $user = auth()->user();
 
+        if ($user->isVisor()) {
+            return redirect()->route('visor');
+        }
+
         if ($user->isTestigo()) {
             return redirect()->intended(route('testigo.portal'));
         }

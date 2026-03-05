@@ -102,6 +102,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is a visor (read-only TV panel access)
+     */
+    public function isVisor(): bool
+    {
+        return $this->role === 'visor';
+    }
+
+    /**
      * Check if user can delete records
      */
     public function canDelete(): bool

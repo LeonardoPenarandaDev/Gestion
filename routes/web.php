@@ -14,16 +14,26 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
+// ── Rutas del visor (accesibles solo para rol visor y admin) ──
+Route::get('/visor', [DashboardController::class, 'visor'])
     ->middleware(['auth', 'verified'])
+    ->name('visor');
+
+Route::get('/visor/data', [DashboardController::class, 'visorData'])
+    ->middleware(['auth', 'verified'])
+    ->name('visor.data');
+
+// ── Rutas bloqueadas para rol visor (not_visor redirige al panel /visor) ──
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'not_visor'])
     ->name('dashboard');
 
 Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'not_visor'])
     ->name('dashboard.stats');
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'not_visor'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

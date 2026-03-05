@@ -216,6 +216,17 @@ class TestigoPortalController extends Controller
         try {
             $votosData = $request->input('votos_candidato', []);
 
+            // Completar con 0 los candidatos activos de esta elección que no se llenaron
+            $todosLosCandidatos = Candidato::where('eleccion_id', $eleccion->id)
+                ->where('activo', true)
+                ->pluck('id');
+
+            foreach ($todosLosCandidatos as $cId) {
+                if (!array_key_exists((string) $cId, $votosData)) {
+                    $votosData[(string) $cId] = 0;
+                }
+            }
+
             // Calcular totales para esta elección
             $candidatosIds = array_keys($votosData);
             $candidatosMap = Candidato::whereIn('id', $candidatosIds)->pluck('tipo', 'id');
